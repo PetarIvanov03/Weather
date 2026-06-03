@@ -44,23 +44,59 @@
         const uiCountry = document.getElementById('weather-country');
         const uiTemp = document.getElementById('weather-temp');
         const uiCondition = document.getElementById('weather-condition');
-        const uiHumidity = document.getElementById('weather-humidity');
+        const uiFeelsLike = document.getElementById('weather-feels-like');
         const uiWind = document.getElementById('weather-wind');
+        const uiHumidity = document.getElementById('weather-humidity');
+        const uiUv = document.getElementById('weather-uv');
+        const uiForecastList = document.getElementById('weather-forecast-list');
 
         let fetchAbortController = null;
 
         const updateStatus = (msg, isLoading = false, isError = false) => {
             statusMsg.textContent = msg;
-            statusMsg.className = `text-sm mb-4 min-h-[1.25rem] ${isLoading ? 'animate-pulse text-indigo-500 dark:text-indigo-400' : isError ? 'text-rose-500' : 'text-gray-500 dark:text-gray-400'}`;
+            statusMsg.className = `text-zinc-500 text-sm mb-4 min-h-[1.25rem] ${isLoading ? 'animate-pulse text-zinc-300' : isError ? 'text-red-400' : ''}`;
+        };
+
+        const getDayName = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { weekday: 'short' });
         };
 
         const renderWeather = (data, city, country) => {
+            const current = data.current;
+            const daily = data.daily;
+
             uiCity.textContent = city || 'Unknown City';
             uiCountry.textContent = country || '--';
-            uiTemp.textContent = `${Math.round(data.temperature)}°C`;
-            uiCondition.textContent = getWeatherCondition(data.weathercode);
-            uiHumidity.textContent = `${Math.round(data.relativehumidity || 0)}%`; // current_weather doesn't return humidity directly in open-meteo without hourly, will need specific params if requested, but let's assume we request it or fallback. Note: We'll modify the API call to include current hourly for humidity if needed, or just use what we get. Actually, current_weather doesn't have humidity. We should use current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m
-            uiWind.textContent = `${data.windspeed} km/h`;
+
+            uiTemp.textContent = `${Math.round(current.temperature_2m)}°`;
+            uiCondition.textContent = getWeatherCondition(current.weather_code);
+
+            uiFeelsLike.textContent = `${Math.round(current.apparent_temperature)}°`;
+            uiWind.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+            uiHumidity.textContent = `${Math.round(current.relative_humidity_2m)}%`;
+            uiUv.textContent = daily.uv_index_max && daily.uv_index_max.length > 0 ? daily.uv_index_max[0] : '--';
+
+            // Render Forecast
+            uiForecastList.innerHTML = '';
+            for (let i = 1; i < 8 && i < daily.time.length; i++) {
+                const dayName = getDayName(daily.time[i]);
+                const condition = getWeatherCondition(daily.weather_code[i]);
+                const maxTemp = Math.round(daily.temperature_2m_max[i]);
+                const minTemp = Math.round(daily.temperature_2m_min[i]);
+
+                const itemHTML = `
+                    <div class="flex items-center justify-between text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-800/50 pb-2 last:border-0 last:pb-0">
+                        <span class="w-12 text-sm font-medium tracking-wide">${dayName}</span>
+                        <span class="flex-1 text-left text-xs text-zinc-500 px-2 truncate">${condition}</span>
+                        <div class="w-16 flex justify-end gap-2 text-sm">
+                            <span class="text-zinc-900 dark:text-zinc-100">${maxTemp}°</span>
+                            <span class="text-zinc-500 dark:text-zinc-600">${minTemp}°</span>
+                        </div>
+                    </div>
+                `;
+                uiForecastList.insertAdjacentHTML('beforeend', itemHTML);
+            }
 
             weatherCard.classList.remove('hidden');
             weatherCard.classList.add('flex');
@@ -75,30 +111,12 @@
             fetchAbortController = new AbortController();
 
             try {
-                // Using current=... is better for humidity, but instructions said current_weather=true.
-                // Let's use the exact url provided: https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true
-                // current_weather does not include humidity. I will add current=relative_humidity_2m to get it, or fallback.
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
                 const response = await fetch(url, { signal: fetchAbortController.signal });
                 if (!response.ok) throw new Error('Failed to fetch weather data.');
                 const data = await response.json();
 
-                const current = data.current_weather;
-                // Try to grab current humidity from hourly data (closest hour)
-                let humidity = '--';
-                if (data.hourly && data.hourly.time && data.hourly.relativehumidity_2m) {
-                    const nowStr = current.time; // Format: "2023-10-10T14:00"
-                    const index = data.hourly.time.indexOf(nowStr);
-                    if (index !== -1) {
-                        humidity = data.hourly.relativehumidity_2m[index];
-                    } else {
-                        humidity = data.hourly.relativehumidity_2m[0]; // fallback to first available
-                    }
-                }
-
-                current.relativehumidity = humidity; // inject for render function
-
-                renderWeather(current, cityName, countryName);
+                renderWeather(data, cityName, countryName);
                 updateStatus('', false);
 
             } catch (err) {
@@ -147,15 +165,29 @@
         searchBtn.addEventListener('click', handleSearch);
         searchInput.addEventListener('keydown', onSearchKeyDown);
 
+        const reverseGeocode = async (lat, lon) => {
+            try {
+                const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                if (!response.ok) return { city: 'Your Location', country: 'Local' };
+                const data = await response.json();
+                const city = data.city || data.locality || 'Your Location';
+                const country = data.countryName || 'Local';
+                return { city, country };
+            } catch (error) {
+                console.error("Reverse geocoding error:", error);
+                return { city: 'Your Location', country: 'Local' };
+            }
+        };
+
         // Geolocation on start
         updateStatus('Locating you...', true);
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    // Try to reverse geocode to get city name (optional, but good for UX)
-                    // Open-Meteo doesn't have a direct free reverse geocoding API in the same format,
-                    // but we can query by name. Let's just fetch weather directly for coordinates and use 'Your Location'.
-                    fetchWeatherData(position.coords.latitude, position.coords.longitude, 'Your Location', 'Local');
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const locationData = await reverseGeocode(lat, lon);
+                    fetchWeatherData(lat, lon, locationData.city, locationData.country);
                 },
                 (error) => {
                     console.warn('Geolocation denied or failed:', error);
