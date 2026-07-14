@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlayHub</title>
+    <title>Weather</title>
     <!-- Basic Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,80 +29,95 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 4px; }
 
-        /* Grid layout for cards */
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @media (min-width: 1024px) {
-            .app-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex antialiased">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen antialiased">
 
-    <!-- Sidebar / Navigation -->
-    <aside class="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 flex flex-col fixed h-full z-20">
-        <div class="p-6 flex justify-between items-center border-b border-gray-200 dark:border-gray-800">
-            <div class="text-2xl font-bold tracking-tight">PlayHub</div>
-            <button id="theme-toggle" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Theme">
-                <svg id="theme-icon-dark" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                <svg id="theme-icon-light" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
-            </button>
-        </div>
-        <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-            <button data-view="home" class="nav-btn w-full text-left px-4 py-2 rounded-lg font-medium bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white transition-colors">Home (All)</button>
+    <button id="theme-toggle" class="fixed top-4 right-4 z-20 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Theme">
+        <svg id="theme-icon-dark" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+        <svg id="theme-icon-light" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+    </button>
 
-            <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tools</div>
-            <button data-view="tools/weather" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Weather App</button>
-            <button data-view="tools/calc-standard" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Standard Calculator</button>
-            <button data-view="tools/calc-trig" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Trigonometry</button>
-            <button data-view="tools/percentage" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Percentage Calc</button>
-            <button data-view="tools/unit-converter" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Unit Converter</button>
-            <button data-view="tools/rgb-hex" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">RGB/HEX Gen</button>
-            <button data-view="tools/base-converter" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Base Converter</button>
-            <button data-view="tools/base64" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Base64 Encoder</button>
-            <button data-view="tools/password" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Password Gen</button>
-            <button data-view="tools/aspect-ratio" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Aspect Ratio Calc</button>
-            <button data-view="tools/word-counter" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Word Counter</button>
-            <button data-view="tools/timer" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Timer/Stopwatch</button>
-            <button data-view="tools/json-formatter" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">JSON Formatter</button>
-            <button data-view="tools/randomizer" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Randomizer</button>
-            <button data-view="tools/health-calc" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">BMR/BMI Calc</button>
-            <button data-view="tools/diff-checker" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Diff Checker</button>
-            <button data-view="tools/macro-tracker" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Macro Tracker</button>
+    <main class="min-h-screen flex flex-col items-center justify-start p-8">
+        <div class="max-w-xl mx-auto flex flex-col items-center justify-start py-10 w-full animate-fade-in px-4">
+            <h1 class="text-3xl font-light tracking-tighter mb-8 text-zinc-900 dark:text-zinc-100">Weather</h1>
 
-            <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Games</div>
-            <button data-view="games/minesweeper" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Minesweeper</button>
-            <button data-view="games/memory-match" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Memory Match</button>
-            <button data-view="games/2048" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">2048</button>
-            <button data-view="games/tic-tac-toe" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Tic-Tac-Toe</button>
-            <button data-view="games/mini-tetris" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Mini Tetris</button>
-            <button data-view="games/wordle" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Wordle Clone</button>
-            <button data-view="games/flappy-bird" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Flappy Bird</button>
-            <button data-view="games/rps" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Rock Paper Scissors</button>
-            <button data-view="games/tower-blocks" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Tower Blocks</button>
-            <button data-view="games/pong" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Classic Pong</button>
-            <button data-view="games/simon" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Simon Says</button>
-            <button data-view="games/speed-typing" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Speed Typing</button>
-            <button data-view="games/piano" class="nav-btn w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Piano Simulator</button>
-        </nav>
-        <footer class="p-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 text-center">
-            &copy; 2026 PlayHub
-        </footer>
-    </aside>
+            <!-- Search Section -->
+            <div class="w-full relative mb-8">
+                <input
+                    type="text"
+                    id="weather-search-input"
+                    placeholder="Search city..."
+                    class="w-full bg-transparent text-zinc-900 dark:text-zinc-100 border-b border-zinc-300 dark:border-zinc-800 px-2 py-3 pr-10 focus:outline-none focus:border-zinc-500 transition-colors text-lg placeholder-zinc-400 dark:placeholder-zinc-600"
+                    autocomplete="off"
+                >
+                <button
+                    id="weather-search-btn"
+                    class="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors active:scale-95"
+                    aria-label="Search"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
 
-    <!-- Main Content Area -->
-    <main class="ml-64 flex-grow p-8 flex flex-col">
-        <div id="dynamic-content" class="w-full h-full">
-            <!-- Dynamic content injected here -->
+            <!-- Status / Loading / Error Message -->
+            <div id="weather-status-msg" class="text-zinc-500 text-sm mb-4 min-h-[1.25rem]">
+                <!-- Pulses when loading: animate-pulse -->
+            </div>
+
+            <!-- Weather Display Card (Hidden by Default) -->
+            <div id="weather-card" class="w-full flex-col hidden gap-4">
+
+                <!-- Current Weather Glassmorphism Card -->
+                <div class="w-full bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-white/40 dark:border-zinc-800/80 shadow-sm dark:shadow-none p-8 flex flex-col items-center">
+                    <h2 id="weather-city" class="text-2xl font-light tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">--</h2>
+                    <p id="weather-country" class="text-zinc-500 text-xs mb-6 uppercase tracking-widest">--</p>
+
+                    <div class="flex flex-col items-center justify-center mb-6">
+                        <span id="weather-temp" class="text-7xl font-light text-zinc-900 dark:text-zinc-100 tracking-tighter">--°</span>
+                        <span id="weather-condition" class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 font-light tracking-wide">--</span>
+                    </div>
+
+                    <div class="w-full grid grid-cols-4 gap-2 mt-4 border-t border-zinc-200 dark:border-zinc-800/50 pt-6">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Feels</span>
+                            <span id="weather-feels-like" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--°</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Wind</span>
+                            <span id="weather-wind" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Hum</span>
+                            <span id="weather-humidity" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--%</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">UV</span>
+                            <span id="weather-uv" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7-Day Forecast Glassmorphism Card -->
+                <div class="w-full bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-white/40 dark:border-zinc-800/80 shadow-sm dark:shadow-none p-6 flex flex-col">
+                    <h3 class="text-xs text-zinc-500 uppercase tracking-widest mb-4 ml-1">7-Day Forecast</h3>
+                    <div id="weather-forecast-list" class="flex flex-col space-y-4">
+                        <!-- Forecast items will be injected here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Global App Logic -->
     <script src="app.js"></script>
 </body>
 </html>
