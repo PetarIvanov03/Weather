@@ -102,6 +102,19 @@
 
         input::placeholder { color: var(--tx3); }
 
+        /* iOS Safari auto-zooms on focus when an input's font-size is below 16px.
+           Keep text inputs at >=16px on mobile/touch viewports; line-height 20px
+           matches the 14px/text-sm box so the search pill height doesn't change.
+           Desktop (fine pointer, >=768px) keeps the 14px design size. */
+        @media (max-width: 767px), (pointer: coarse) {
+            input[type="text"],
+            input[type="search"],
+            input:not([type]) {
+                font-size: 16px;
+                line-height: 20px;
+            }
+        }
+
         /* Pale icon set needs a hint of depth on light backgrounds */
         :root:not(.dark) .wx-icon { filter: drop-shadow(0 1px 2px rgba(50, 60, 75, 0.35)); }
 
