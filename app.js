@@ -183,8 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchInput = document.getElementById('weather-search-input');
     const searchBtn = document.getElementById('weather-search-btn');
-    const statusMsg = document.getElementById('weather-status-msg');
     const weatherCard = document.getElementById('weather-card');
+
+    const stateScreen = document.getElementById('state-screen');
+    const stateLoading = document.getElementById('state-loading');
+    const stateError = document.getElementById('state-error');
+    const stateEmpty = document.getElementById('state-empty');
+    const loadingMessage = document.getElementById('loading-message');
+    const errorMessage = document.getElementById('error-message');
+    const emptyTitle = document.getElementById('empty-title');
+    const emptyMessage = document.getElementById('empty-message');
+    const errorRetry = document.getElementById('error-retry');
+
+    let lastAction = null; // re-run by the error screen's "Try again" button
 
     const uiCity = document.getElementById('weather-city');
     const uiCountrySep = document.getElementById('weather-country-sep');
@@ -230,10 +241,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: false });
 
-    const updateStatus = (msg, isLoading = false, isError = false) => {
-        statusMsg.textContent = msg;
-        statusMsg.className = `text-sm mb-4 min-h-[1.25rem] ${isLoading ? 'animate-pulse' : ''}`;
-        statusMsg.style.color = isError ? '#f87171' : 'var(--tx2)';
+    // Designed state screens: 'loading' | 'error' | 'empty' | 'none' (show weather)
+    const showState = (name, message, title) => {
+        [stateLoading, stateError, stateEmpty].forEach((el) => {
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+        });
+        if (name === 'none') {
+            stateScreen.classList.add('hidden');
+            weatherCard.classList.remove('hidden');
+            return;
+        }
+        weatherCard.classList.add('hidden');
+        stateScreen.classList.remove('hidden');
+        const panel = { loading: stateLoading, error: stateError, empty: stateEmpty }[name];
+        panel.classList.remove('hidden');
+        panel.classList.add('flex');
+        if (name === 'loading' && message) loadingMessage.textContent = message;
+        if (name === 'error' && message) errorMessage.textContent = message;
+        if (name === 'empty') {
+            emptyTitle.textContent = title || 'No location set';
+            emptyMessage.textContent = message || 'Search for a city above to see the weather.';
+        }
     };
 
     const getDayName = (dateString) => {
@@ -353,12 +382,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHourly(data.hourly, current.time);
         renderDaily(daily);
 
-        weatherCard.classList.remove('hidden');
+        showState('none');
     };
 
     const fetchWeatherData = async (lat, lon, cityName, countryName) => {
-        updateStatus('Fetching weather data...', true);
-        weatherCard.classList.add('hidden');
+        lastAction = () => fetchWeatherData(lat, lon, cityName, countryName);
+        showState('loading', 'Fetching weather data...');
 
         if (fetchAbortController) fetchAbortController.abort();
         fetchAbortController = new AbortController();
@@ -375,12 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             renderWeather(data, cityName, countryName);
-            updateStatus('', false);
 
         } catch (err) {
             if (err.name === 'AbortError') return;
             console.error(err);
-            updateStatus('Error fetching weather data. Please try again.', false, true);
+            showState('error', 'Could not load weather data. Check your connection and try again.');
         }
     };
 
@@ -388,8 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = searchInput.value.trim();
         if (!query) return;
 
-        updateStatus('Searching for city...', true);
-        weatherCard.classList.add('hidden');
+        lastAction = handleSearch;
+        showState('loading', 'Searching for city...');
 
         if (fetchAbortController) fetchAbortController.abort();
         fetchAbortController = new AbortController();
@@ -401,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!data.results || data.results.length === 0) {
-                updateStatus('City not found. Please try another search.', false, true);
+                showState('empty', `No results for "${query}". Try a different search.`, 'Location not found');
                 return;
             }
 
@@ -411,13 +439,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             if (err.name === 'AbortError') return;
             console.error(err);
-            updateStatus('Error searching for city. Please try again.', false, true);
+            showState('error', 'Could not search for that city. Check your connection and try again.');
         }
     };
 
     searchBtn.addEventListener('click', handleSearch);
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') handleSearch();
+    });
+    errorRetry.addEventListener('click', () => {
+        if (lastAction) lastAction();
     });
 
     const reverseGeocode = async (lat, lon) => {
@@ -435,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Geolocation on start
-    updateStatus('Locating you...', true);
+    showState('loading', 'Locating you...');
     if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
@@ -446,11 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             (error) => {
                 console.warn('Geolocation denied or failed:', error);
-                updateStatus('Please search for a city above.');
+                showState('empty');
             },
             { timeout: 10000 }
         );
     } else {
-        updateStatus('Please search for a city above.');
+        showState('empty');
     }
 });
