@@ -164,6 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const getUvLabel = (uv) => uv < 3 ? 'Low' : uv < 6 ? 'Moderate' : uv < 8 ? 'High' : uv < 11 ? 'Very High' : 'Extreme';
     const getCompass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
 
+    // Format "2026-07-16T15:00" -> "3PM" (string-based: API times are already in the location's timezone)
+    const formatHour = (isoTime) => {
+        const h = parseInt(isoTime.slice(11, 13), 10);
+        if (h === 0) return '12AM';
+        if (h === 12) return '12PM';
+        return h < 12 ? `${h}AM` : `${h - 12}PM`;
+    };
+
     // Format "2026-07-16T06:12" -> "6:12 AM" (string-based: API times are already in the location's timezone)
     const formatClock = (isoTime) => {
         let h = parseInt(isoTime.slice(11, 13), 10);
@@ -197,8 +205,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const uiSunrise = document.getElementById('sunrise');
     const uiSunset = document.getElementById('sunset');
     const uiForecastList = document.getElementById('weather-forecast-list');
+    const railOuter = document.getElementById('hourly-rail-outer');
+    const rail = document.getElementById('hourly-rail');
 
     let fetchAbortController = null;
+
+    // Hourly rail: keep a whole number of centered cards per slide
+    // (card width + gap: 84+10 on mobile, 90+12 on desktop, from the design)
+    const updateRailWidth = () => {
+        const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+        const gap = isDesktop ? 12 : 10;
+        const cardUnit = (isDesktop ? 90 : 84) + gap;
+        const count = Math.max(1, Math.floor((railOuter.clientWidth + gap) / cardUnit));
+        rail.style.width = `${count * cardUnit - gap}px`;
+        rail.style.margin = '0 auto';
+    };
+    new ResizeObserver(updateRailWidth).observe(railOuter);
+
+    // Desktop: translate vertical wheel into horizontal rail scroll
+    rail.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            rail.scrollLeft += e.deltaY;
+            e.preventDefault();
+        }
+    }, { passive: false });
 
     const updateStatus = (msg, isLoading = false, isError = false) => {
         statusMsg.textContent = msg;
@@ -251,6 +281,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Next 24 hours starting from the hour containing "now"
+    const renderHourly = (hourly, currentTime) => {
+        const times = hourly.time;
+        let start = times.findIndex((t) => t > currentTime);
+        if (start === -1) start = times.length;
+        start = Math.max(0, start - 1);
+        const end = Math.min(start + 24, times.length);
+
+        let html = '';
+        for (let i = start; i < end; i++) {
+            const label = i === start ? 'Now' : formatHour(times[i]);
+            const icon = getIcon(hourly.weather_code[i], hourly.is_day[i] === 1, 30);
+            const precip = hourly.precipitation_probability && hourly.precipitation_probability[i] != null
+                ? hourly.precipitation_probability[i] : 0;
+            html += `
+                <div class="hour-card glass-card">
+                    <div class="text-[13px] font-medium" style="color: var(--tx2)">${label}</div>
+                    <div class="w-[34px] h-[34px] flex items-center justify-center">${icon}</div>
+                    <div class="text-lg font-medium">${Math.round(hourly.temperature_2m[i])}°</div>
+                    <div class="flex items-center gap-[3px] text-[11px] font-semibold" style="color: var(--precip)">
+                        <svg width="8" height="10" viewBox="0 0 8 10"><path d="M4 0L8 6H0Z" fill="currentColor"></path></svg>
+                        <span>${precip}%</span>
+                    </div>
+                    <div class="text-[11px] font-medium" style="color: var(--tx2)">${Math.round(hourly.wind_speed_10m[i])} km/h</div>
+                    <div class="text-[10px] font-semibold tracking-[0.3px]" style="color: var(--tx3)">UV ${Math.round(hourly.uv_index[i])}</div>
+                </div>
+            `;
+        }
+        rail.innerHTML = html;
+        rail.scrollLeft = 0;
+        updateRailWidth();
+    };
+
     const renderWeather = (data, city, country) => {
         const current = data.current;
         const daily = data.daily;
@@ -287,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uiSunrise.textContent = formatClock(daily.sunrise[0]);
         uiSunset.textContent = formatClock(daily.sunset[0]);
 
+        renderHourly(data.hourly, current.time);
         renderDaily(daily);
 
         weatherCard.classList.remove('hidden');
@@ -303,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = 'https://api.open-meteo.com/v1/forecast'
                 + `?latitude=${lat}&longitude=${lon}`
                 + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
+                + '&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m,uv_index,is_day'
                 + '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max'
                 + '&timezone=auto';
             const response = await fetch(url, { signal: fetchAbortController.signal });
