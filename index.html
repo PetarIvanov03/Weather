@@ -102,6 +102,9 @@
 
         input::placeholder { color: var(--tx3); }
 
+        /* Pale icon set needs a hint of depth on light backgrounds */
+        :root:not(.dark) .wx-icon { filter: drop-shadow(0 1px 2px rgba(50, 60, 75, 0.35)); }
+
         .spinner {
             width: 36px;
             height: 36px;
@@ -199,7 +202,7 @@
                         <div class="order-1 md:order-none md:col-start-2 md:row-start-1 md:self-end text-2xl md:text-[22px] font-semibold">
                             <span id="weather-city">--</span><span id="weather-country-sep">, </span><span id="weather-country"></span>
                         </div>
-                        <div class="order-2 md:col-start-1 md:row-start-1 md:row-span-2 font-extralight leading-none text-[92px] tracking-[-2px] md:text-[108px] md:tracking-[-3px] mt-1 md:mt-0">
+                        <div class="order-2 md:col-start-1 md:row-start-1 md:row-span-2 font-extralight leading-none text-[100px] tracking-[-2px] md:text-[108px] md:tracking-[-3px] mt-1 md:mt-0">
                             <span id="weather-temp">--</span>°
                         </div>
                         <div class="order-3 md:col-start-2 md:row-start-2 md:self-start flex flex-col items-center md:flex-row md:flex-wrap md:items-baseline md:gap-x-1.5 mt-0.5 md:mt-1">

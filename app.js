@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     // Theme Toggle
     const themeBtn = document.getElementById('theme-toggle');
     const darkIcon = document.getElementById('theme-icon-dark');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Soft SVG icon set from the design (sun / cloud / rain / moon),
     // extended in the same style with partly / snow / fog / thunder.
     const ICONS = {
-        sun: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 30 30">
+        sun: (w) => `<svg class="wx-icon" width="${w}" height="${w}" viewBox="0 0 30 30">
             <circle cx="15" cy="15" r="7" fill="#ffd97a"></circle>
             <g stroke="#ffd97a" stroke-width="2" stroke-linecap="round">
                 <line x1="15" y1="1" x2="15" y2="5"></line><line x1="15" y1="25" x2="15" y2="29"></line>
@@ -94,28 +94,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 <line x1="5.5" y1="24.5" x2="8.2" y2="21.8"></line><line x1="21.8" y1="8.2" x2="24.5" y2="5.5"></line>
             </g>
         </svg>`,
-        moon: (w) => `<svg width="${w * 0.87}" height="${w * 0.87}" viewBox="0 0 24 24">
+        moon: (w) => `<svg class="wx-icon" width="${w * 0.87}" height="${w * 0.87}" viewBox="0 0 24 24">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#d9def0"></path>
         </svg>`,
-        cloud: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+        cloud: (w) => `<svg class="wx-icon" width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
             <circle cx="12" cy="16" r="8" fill="#e9edf3" opacity="0.95"></circle>
             <circle cx="20" cy="13" r="9" fill="#f4f6f9"></circle>
             <circle cx="24" cy="18" r="7" fill="#dfe4ec" opacity="0.9"></circle>
             <rect x="7" y="18" width="22" height="8" rx="4" fill="#eef1f5"></rect>
         </svg>`,
-        partly: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+        partly: (w) => `<svg class="wx-icon" width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
             <circle cx="23" cy="9" r="6" fill="#ffd97a"></circle>
             <circle cx="12" cy="17" r="7.5" fill="#e9edf3" opacity="0.95"></circle>
             <circle cx="19" cy="15" r="8" fill="#f4f6f9"></circle>
             <rect x="7" y="18" width="21" height="8" rx="4" fill="#eef1f5"></rect>
         </svg>`,
-        partlyNight: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+        partlyNight: (w) => `<svg class="wx-icon" width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
             <path d="M28 11.4A6.5 6.5 0 1 1 20.9 4.3 5 5 0 0 0 28 11.4z" fill="#d9def0"></path>
             <circle cx="11" cy="17" r="7.5" fill="#e9edf3" opacity="0.95"></circle>
             <circle cx="18" cy="15" r="8" fill="#f4f6f9"></circle>
             <rect x="6" y="18" width="21" height="8" rx="4" fill="#eef1f5"></rect>
         </svg>`,
-        rain: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+        rain: (w) => `<svg class="wx-icon" width="${w}" height="${w}" viewBox="0 0 34 34">
             <circle cx="12" cy="12" r="7" fill="#c7cfdb" opacity="0.95"></circle>
             <circle cx="19" cy="10" r="8" fill="#d4dae3"></circle>
             <rect x="7" y="14" width="20" height="7" rx="3.5" fill="#ccd3dd"></rect>
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <line x1="26" y1="25" x2="24" y2="30"></line>
             </g>
         </svg>`,
-        snow: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+        snow: (w) => `<svg class="wx-icon" width="${w}" height="${w}" viewBox="0 0 34 34">
             <circle cx="12" cy="12" r="7" fill="#e3e8f0" opacity="0.95"></circle>
             <circle cx="19" cy="10" r="8" fill="#eef1f6"></circle>
             <rect x="7" y="14" width="20" height="7" rx="3.5" fill="#e7ebf2"></rect>
@@ -135,14 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <circle cx="25" cy="26" r="1.8"></circle>
             </g>
         </svg>`,
-        fog: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+        fog: (w) => `<svg class="wx-icon" width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
             <g stroke="#dfe4ec" stroke-width="2.5" stroke-linecap="round" opacity="0.9">
                 <line x1="6" y1="9" x2="28" y2="9"></line>
                 <line x1="4" y1="15" x2="30" y2="15"></line>
                 <line x1="7" y1="21" x2="26" y2="21"></line>
             </g>
         </svg>`,
-        thunder: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+        thunder: (w) => `<svg class="wx-icon" width="${w}" height="${w}" viewBox="0 0 34 34">
             <circle cx="12" cy="11" r="7" fill="#c7cfdb" opacity="0.95"></circle>
             <circle cx="19" cy="9" r="8" fill="#d4dae3"></circle>
             <rect x="7" y="13" width="20" height="7" rx="3.5" fill="#ccd3dd"></rect>
@@ -383,6 +383,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDaily(daily);
 
         showState('none');
+        // Re-measure now that the card is visible (it was display:none during render)
+        updateRailWidth();
     };
 
     const fetchWeatherData = async (lat, lon, cityName, countryName) => {
