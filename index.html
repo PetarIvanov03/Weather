@@ -118,6 +118,28 @@
         /* Pale icon set needs a hint of depth on light backgrounds */
         :root:not(.dark) .wx-icon { filter: drop-shadow(0 1px 2px rgba(50, 60, 75, 0.35)); }
 
+        /* Search autocomplete dropdown: more opaque than the glass cards so
+           list entries stay legible over whatever renders beneath */
+        #search-dropdown {
+            background: linear-gradient(rgba(255,255,255,0.78), rgba(255,255,255,0.78)), rgba(255,255,255,0.5);
+        }
+        :root.dark #search-dropdown {
+            background: linear-gradient(rgba(24,29,38,0.82), rgba(24,29,38,0.82)), rgba(255,255,255,0.08);
+        }
+        .search-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 9px 16px;
+            font-size: 14px;
+            color: var(--tx1);
+            cursor: pointer;
+        }
+        .search-option[aria-selected="true"],
+        .search-option:hover {
+            background: var(--track);
+        }
+
         .spinner {
             width: 36px;
             height: 36px;
@@ -147,26 +169,41 @@
 
     <main class="max-w-[1440px] mx-auto px-5 pt-6 pb-10 md:px-14 md:pt-10 md:pb-12">
 
-        <!-- Search + theme toggle -->
-        <div class="flex items-center gap-3 mb-6 md:mb-8 max-w-md animate-fade-in">
-            <div class="glass-card flex-1 flex items-center gap-2.5 !rounded-full px-4 py-2.5">
-                <svg class="w-4 h-4 shrink-0" style="color: var(--tx3)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                    type="text"
-                    id="weather-search-input"
-                    placeholder="Search city..."
-                    class="flex-1 min-w-0 bg-transparent text-sm focus:outline-none"
-                    style="color: var(--tx1)"
-                    autocomplete="off"
-                >
-                <button
-                    id="weather-search-btn"
-                    class="text-[11px] font-semibold uppercase tracking-widest px-2 py-1 rounded-full hover:opacity-70 transition-opacity active:scale-95"
-                    style="color: var(--tx2)"
-                    aria-label="Search"
-                >Go</button>
+        <!-- Search + theme toggle. z-30: animate-fade-in gives each top-level
+             section its own stacking context, so without an explicit z-index the
+             later weather-card/state-screen sections would paint over the
+             search dropdown. -->
+        <div class="relative z-30 flex items-center gap-3 mb-6 md:mb-8 max-w-md animate-fade-in">
+            <div class="relative flex-1">
+                <div class="glass-card flex items-center gap-2.5 !rounded-full px-4 py-2.5">
+                    <svg class="w-4 h-4 shrink-0" style="color: var(--tx3)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text"
+                        id="weather-search-input"
+                        placeholder="Search city..."
+                        class="flex-1 min-w-0 bg-transparent text-sm focus:outline-none"
+                        style="color: var(--tx1)"
+                        autocomplete="off"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="search-dropdown"
+                    >
+                    <button
+                        id="weather-search-btn"
+                        class="text-[11px] font-semibold uppercase tracking-widest px-2 py-1 rounded-full hover:opacity-70 transition-opacity active:scale-95"
+                        style="color: var(--tx2)"
+                        aria-label="Search"
+                    >Go</button>
+                </div>
+                <div
+                    id="search-dropdown"
+                    class="glass-card hidden absolute left-0 right-0 top-full mt-2 z-20 py-1.5 max-h-72 overflow-y-auto"
+                    role="listbox"
+                    aria-label="City suggestions"
+                ></div>
             </div>
             <button id="theme-toggle" class="glass-card !rounded-full p-2.5 shrink-0 hover:opacity-70 transition-opacity" aria-label="Toggle Theme" style="color: var(--tx1)">
                 <svg id="theme-icon-dark" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>

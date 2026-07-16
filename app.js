@@ -414,41 +414,167 @@
         }
     };
 
+    // ---------- Search autocomplete ----------
+    const dropdown = document.getElementById('search-dropdown');
+
+    let suggestAbortController = null;
+    let suggestDebounce = null;
+    let dropdownResults = [];
+    let highlightIndex = -1;
+
+    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+
+    const fetchGeocode = async (query, signal) => {
+        const searchUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8`;
+        const response = await fetch(searchUrl, { signal });
+        if (!response.ok) throw new Error('Geocoding API failed.');
+        const data = await response.json();
+        return data.results || [];
+    };
+
+    const closeDropdown = () => {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
+        dropdownResults = [];
+        highlightIndex = -1;
+        searchInput.setAttribute('aria-expanded', 'false');
+    };
+
+    const renderDropdown = () => {
+        if (dropdownResults.length === 0) {
+            dropdown.innerHTML = '<div class="px-4 py-2.5 text-sm" style="color: var(--tx3)">No matches found</div>';
+        } else {
+            dropdown.innerHTML = dropdownResults.map((r, i) => {
+                const region = [r.admin1, r.country].filter(Boolean).join(', ');
+                return `
+                    <button type="button" class="search-option" role="option" id="search-option-${i}"
+                        data-index="${i}" aria-selected="${i === highlightIndex}">
+                        <span class="font-medium">${escapeHtml(r.name)}</span>${region ? `<span style="color: var(--tx3)">, ${escapeHtml(region)}</span>` : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+        dropdown.classList.remove('hidden');
+        searchInput.setAttribute('aria-expanded', 'true');
+    };
+
+    const moveHighlight = (delta) => {
+        if (dropdownResults.length === 0) return;
+        highlightIndex = (highlightIndex + delta + dropdownResults.length) % dropdownResults.length;
+        dropdown.querySelectorAll('.search-option').forEach((el, i) => {
+            el.setAttribute('aria-selected', String(i === highlightIndex));
+        });
+        const active = dropdown.querySelector(`#search-option-${highlightIndex}`);
+        if (active) active.scrollIntoView({ block: 'nearest' });
+    };
+
+    const selectResult = (result) => {
+        closeDropdown();
+        searchInput.value = result.name;
+        searchInput.blur();
+        fetchWeatherData(result.latitude, result.longitude, result.name, result.country || result.admin1 || '--');
+    };
+
+    // As-you-type suggestions (debounced). Failures here just close the
+    // dropdown — no state screen churn while typing.
+    const suggest = async (query) => {
+        if (suggestAbortController) suggestAbortController.abort();
+        suggestAbortController = new AbortController();
+        try {
+            const results = await fetchGeocode(query, suggestAbortController.signal);
+            dropdownResults = results;
+            highlightIndex = -1;
+            renderDropdown();
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.error(err);
+            closeDropdown();
+        }
+    };
+
+    // Submit (Enter with nothing highlighted, or the Go button): a single
+    // unambiguous match goes straight to weather, several open the dropdown
+    // for disambiguation, zero shows the location-not-found state.
     const handleSearch = async () => {
         const query = searchInput.value.trim();
         if (!query) return;
 
         lastAction = handleSearch;
-        showState('loading', 'Searching for city...');
-
-        if (fetchAbortController) fetchAbortController.abort();
-        fetchAbortController = new AbortController();
+        clearTimeout(suggestDebounce);
+        if (suggestAbortController) suggestAbortController.abort();
+        suggestAbortController = new AbortController();
 
         try {
-            const searchUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`;
-            const response = await fetch(searchUrl, { signal: fetchAbortController.signal });
-            if (!response.ok) throw new Error('Geocoding API failed.');
-            const data = await response.json();
+            const results = await fetchGeocode(query, suggestAbortController.signal);
 
-            if (!data.results || data.results.length === 0) {
+            if (results.length === 0) {
+                closeDropdown();
                 showState('empty', `No results for "${query}". Try a different search.`, 'Location not found');
                 return;
             }
-
-            const result = data.results[0];
-            fetchWeatherData(result.latitude, result.longitude, result.name, result.country || result.admin1 || '--');
+            if (results.length === 1) {
+                selectResult(results[0]);
+                return;
+            }
+            dropdownResults = results;
+            highlightIndex = 0;
+            renderDropdown();
+            searchInput.focus();
 
         } catch (err) {
             if (err.name === 'AbortError') return;
             console.error(err);
+            closeDropdown();
             showState('error', 'Could not search for that city. Check your connection and try again.');
         }
     };
 
     searchBtn.addEventListener('click', handleSearch);
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSearch();
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(suggestDebounce);
+        const query = searchInput.value.trim();
+        if (query.length < 2) {
+            closeDropdown();
+            return;
+        }
+        suggestDebounce = setTimeout(() => suggest(query), 300);
     });
+
+    searchInput.addEventListener('keydown', (e) => {
+        const open = !dropdown.classList.contains('hidden');
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            if (open && dropdownResults.length > 0) {
+                e.preventDefault();
+                moveHighlight(e.key === 'ArrowDown' ? 1 : -1);
+            }
+        } else if (e.key === 'Enter') {
+            if (open && highlightIndex >= 0 && dropdownResults[highlightIndex]) {
+                selectResult(dropdownResults[highlightIndex]);
+            } else {
+                handleSearch();
+            }
+        } else if (e.key === 'Escape') {
+            closeDropdown();
+        }
+    });
+
+    // Pointer selection: pointerdown beats the input's blur, so the tap
+    // isn't lost to a focus change (matters on mobile)
+    dropdown.addEventListener('pointerdown', (e) => {
+        const option = e.target.closest('.search-option');
+        if (!option) return;
+        e.preventDefault();
+        selectResult(dropdownResults[Number(option.dataset.index)]);
+    });
+
+    // Click anywhere outside the search area closes the dropdown
+    document.addEventListener('pointerdown', (e) => {
+        if (!e.target.closest('#search-dropdown') && e.target !== searchInput) closeDropdown();
+    });
+
     errorRetry.addEventListener('click', () => {
         if (lastAction) lastAction();
     });
