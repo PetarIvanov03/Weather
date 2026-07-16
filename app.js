@@ -66,26 +66,144 @@ document.addEventListener('DOMContentLoaded', () => {
         return conditions[code] || 'Unknown Condition';
     };
 
+    // WMO code groups for icon / theme selection
+    const RAIN_CODES = [51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82];
+    const SNOW_CODES = [71, 73, 75, 77, 85, 86];
+    const THUNDER_CODES = [95, 96, 99];
+    const FOG_CODES = [45, 48];
+
+    const getIconType = (code, isDay) => {
+        if (SNOW_CODES.includes(code)) return 'snow';
+        if (THUNDER_CODES.includes(code)) return 'thunder';
+        if (RAIN_CODES.includes(code)) return 'rain';
+        if (FOG_CODES.includes(code)) return 'fog';
+        if (code === 3) return 'cloud';
+        if (code === 2) return isDay ? 'partly' : 'partlyNight';
+        return isDay ? 'sun' : 'moon';
+    };
+
+    // Soft SVG icon set from the design (sun / cloud / rain / moon),
+    // extended in the same style with partly / snow / fog / thunder.
+    const ICONS = {
+        sun: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="7" fill="#ffd97a"></circle>
+            <g stroke="#ffd97a" stroke-width="2" stroke-linecap="round">
+                <line x1="15" y1="1" x2="15" y2="5"></line><line x1="15" y1="25" x2="15" y2="29"></line>
+                <line x1="1" y1="15" x2="5" y2="15"></line><line x1="25" y1="15" x2="29" y2="15"></line>
+                <line x1="5.5" y1="5.5" x2="8.2" y2="8.2"></line><line x1="21.8" y1="21.8" x2="24.5" y2="24.5"></line>
+                <line x1="5.5" y1="24.5" x2="8.2" y2="21.8"></line><line x1="21.8" y1="8.2" x2="24.5" y2="5.5"></line>
+            </g>
+        </svg>`,
+        moon: (w) => `<svg width="${w * 0.87}" height="${w * 0.87}" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#d9def0"></path>
+        </svg>`,
+        cloud: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+            <circle cx="12" cy="16" r="8" fill="#e9edf3" opacity="0.95"></circle>
+            <circle cx="20" cy="13" r="9" fill="#f4f6f9"></circle>
+            <circle cx="24" cy="18" r="7" fill="#dfe4ec" opacity="0.9"></circle>
+            <rect x="7" y="18" width="22" height="8" rx="4" fill="#eef1f5"></rect>
+        </svg>`,
+        partly: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+            <circle cx="23" cy="9" r="6" fill="#ffd97a"></circle>
+            <circle cx="12" cy="17" r="7.5" fill="#e9edf3" opacity="0.95"></circle>
+            <circle cx="19" cy="15" r="8" fill="#f4f6f9"></circle>
+            <rect x="7" y="18" width="21" height="8" rx="4" fill="#eef1f5"></rect>
+        </svg>`,
+        partlyNight: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+            <path d="M28 11.4A6.5 6.5 0 1 1 20.9 4.3 5 5 0 0 0 28 11.4z" fill="#d9def0"></path>
+            <circle cx="11" cy="17" r="7.5" fill="#e9edf3" opacity="0.95"></circle>
+            <circle cx="18" cy="15" r="8" fill="#f4f6f9"></circle>
+            <rect x="6" y="18" width="21" height="8" rx="4" fill="#eef1f5"></rect>
+        </svg>`,
+        rain: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+            <circle cx="12" cy="12" r="7" fill="#c7cfdb" opacity="0.95"></circle>
+            <circle cx="19" cy="10" r="8" fill="#d4dae3"></circle>
+            <rect x="7" y="14" width="20" height="7" rx="3.5" fill="#ccd3dd"></rect>
+            <g stroke="#9fb3d1" stroke-width="2" stroke-linecap="round">
+                <line x1="12" y1="25" x2="10" y2="30"></line>
+                <line x1="19" y1="25" x2="17" y2="31"></line>
+                <line x1="26" y1="25" x2="24" y2="30"></line>
+            </g>
+        </svg>`,
+        snow: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+            <circle cx="12" cy="12" r="7" fill="#e3e8f0" opacity="0.95"></circle>
+            <circle cx="19" cy="10" r="8" fill="#eef1f6"></circle>
+            <rect x="7" y="14" width="20" height="7" rx="3.5" fill="#e7ebf2"></rect>
+            <g fill="#dfe6f2">
+                <circle cx="11" cy="26" r="1.8"></circle>
+                <circle cx="18" cy="29" r="1.8"></circle>
+                <circle cx="25" cy="26" r="1.8"></circle>
+            </g>
+        </svg>`,
+        fog: (w) => `<svg width="${w}" height="${w * 30 / 34}" viewBox="0 0 34 30">
+            <g stroke="#dfe4ec" stroke-width="2.5" stroke-linecap="round" opacity="0.9">
+                <line x1="6" y1="9" x2="28" y2="9"></line>
+                <line x1="4" y1="15" x2="30" y2="15"></line>
+                <line x1="7" y1="21" x2="26" y2="21"></line>
+            </g>
+        </svg>`,
+        thunder: (w) => `<svg width="${w}" height="${w}" viewBox="0 0 34 34">
+            <circle cx="12" cy="11" r="7" fill="#c7cfdb" opacity="0.95"></circle>
+            <circle cx="19" cy="9" r="8" fill="#d4dae3"></circle>
+            <rect x="7" y="13" width="20" height="7" rx="3.5" fill="#ccd3dd"></rect>
+            <path d="M19 19l-6 8h4.2L15 34l8-10h-4.4l2.6-5z" fill="#ffd97a"></path>
+        </svg>`
+    };
+    const getIcon = (code, isDay, size) => ICONS[getIconType(code, isDay)](size);
+
+    // Gradient theme selection: current weather code + day/night
+    const getTheme = (code, isDay) => {
+        if (SNOW_CODES.includes(code)) return 'snow';
+        if (RAIN_CODES.includes(code) || THUNDER_CODES.includes(code)) return 'rain';
+        if (!isDay) return 'night';
+        if (code <= 1) return 'clear';
+        if (code === 2) return 'partly-cloudy';
+        return 'overcast';
+    };
+
+    const getUvLabel = (uv) => uv < 3 ? 'Low' : uv < 6 ? 'Moderate' : uv < 8 ? 'High' : uv < 11 ? 'Very High' : 'Extreme';
+    const getCompass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
+
+    // Format "2026-07-16T06:12" -> "6:12 AM" (string-based: API times are already in the location's timezone)
+    const formatClock = (isoTime) => {
+        let h = parseInt(isoTime.slice(11, 13), 10);
+        const m = isoTime.slice(14, 16);
+        const ap = h < 12 ? 'AM' : 'PM';
+        h = h % 12 || 12;
+        return `${h}:${m} ${ap}`;
+    };
+
     const searchInput = document.getElementById('weather-search-input');
     const searchBtn = document.getElementById('weather-search-btn');
     const statusMsg = document.getElementById('weather-status-msg');
     const weatherCard = document.getElementById('weather-card');
 
     const uiCity = document.getElementById('weather-city');
+    const uiCountrySep = document.getElementById('weather-country-sep');
     const uiCountry = document.getElementById('weather-country');
     const uiTemp = document.getElementById('weather-temp');
     const uiCondition = document.getElementById('weather-condition');
+    const uiHeroHigh = document.getElementById('hero-high');
+    const uiHeroLow = document.getElementById('hero-low');
     const uiFeelsLike = document.getElementById('weather-feels-like');
     const uiWind = document.getElementById('weather-wind');
+    const uiWindDir = document.getElementById('wind-dir');
+    const uiWindArrow = document.getElementById('wind-arrow');
     const uiHumidity = document.getElementById('weather-humidity');
+    const uiDewPoint = document.getElementById('dew-point');
     const uiUv = document.getElementById('weather-uv');
+    const uiUvLabel = document.getElementById('uv-label');
+    const uiUvBar = document.getElementById('uv-bar');
+    const uiSunrise = document.getElementById('sunrise');
+    const uiSunset = document.getElementById('sunset');
     const uiForecastList = document.getElementById('weather-forecast-list');
 
     let fetchAbortController = null;
 
     const updateStatus = (msg, isLoading = false, isError = false) => {
         statusMsg.textContent = msg;
-        statusMsg.className = `text-zinc-500 text-sm mb-4 min-h-[1.25rem] ${isLoading ? 'animate-pulse text-zinc-300' : isError ? 'text-red-400' : ''}`;
+        statusMsg.className = `text-sm mb-4 min-h-[1.25rem] ${isLoading ? 'animate-pulse' : ''}`;
+        statusMsg.style.color = isError ? '#f87171' : 'var(--tx2)';
     };
 
     const getDayName = (dateString) => {
@@ -93,56 +211,100 @@ document.addEventListener('DOMContentLoaded', () => {
         return date.toLocaleDateString('en-US', { weekday: 'short' });
     };
 
-    const renderWeather = (data, city, country) => {
-        const current = data.current;
-        const daily = data.daily;
-
-        uiCity.textContent = city || 'Unknown City';
-        uiCountry.textContent = country || '--';
-
-        uiTemp.textContent = `${Math.round(current.temperature_2m)}°`;
-        uiCondition.textContent = getWeatherCondition(current.weather_code);
-
-        uiFeelsLike.textContent = `${Math.round(current.apparent_temperature)}°`;
-        uiWind.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
-        uiHumidity.textContent = `${Math.round(current.relative_humidity_2m)}%`;
-        uiUv.textContent = daily.uv_index_max && daily.uv_index_max.length > 0 ? daily.uv_index_max[0] : '--';
-
-        // Render Forecast
+    const renderDaily = (daily) => {
         uiForecastList.innerHTML = '';
-        for (let i = 1; i < 8 && i < daily.time.length; i++) {
-            const dayName = getDayName(daily.time[i]);
-            const condition = getWeatherCondition(daily.weather_code[i]);
-            const maxTemp = Math.round(daily.temperature_2m_max[i]);
+        const days = Math.min(7, daily.time.length);
+
+        // Global min/max across the week for the temperature range bars
+        let weekLo = Infinity, weekHi = -Infinity;
+        for (let i = 0; i < days; i++) {
+            weekLo = Math.min(weekLo, daily.temperature_2m_min[i]);
+            weekHi = Math.max(weekHi, daily.temperature_2m_max[i]);
+        }
+        const span = Math.max(1, weekHi - weekLo);
+
+        for (let i = 0; i < days; i++) {
+            const dayName = i === 0 ? 'Today' : getDayName(daily.time[i]);
+            const icon = getIcon(daily.weather_code[i], true, 22);
+            const precip = daily.precipitation_probability_max && daily.precipitation_probability_max[i] != null
+                ? daily.precipitation_probability_max[i] : 0;
             const minTemp = Math.round(daily.temperature_2m_min[i]);
+            const maxTemp = Math.round(daily.temperature_2m_max[i]);
+            const left = ((daily.temperature_2m_min[i] - weekLo) / span * 100).toFixed(0);
+            const width = ((daily.temperature_2m_max[i] - daily.temperature_2m_min[i]) / span * 100).toFixed(0);
 
             const itemHTML = `
-                <div class="flex items-center justify-between text-zinc-700 dark:text-zinc-300 border-b border-zinc-200 dark:border-zinc-800/50 pb-2 last:border-0 last:pb-0">
-                    <span class="w-12 text-sm font-medium tracking-wide">${dayName}</span>
-                    <span class="flex-1 text-left text-xs text-zinc-500 px-2 truncate">${condition}</span>
-                    <div class="w-16 flex justify-end gap-2 text-sm">
-                        <span class="text-zinc-900 dark:text-zinc-100">${maxTemp}°</span>
-                        <span class="text-zinc-500 dark:text-zinc-600">${minTemp}°</span>
+                <div class="flex items-center gap-3 py-[7px] md:py-2 ${i > 0 ? 'border-t' : ''}" style="border-color: var(--row-border)">
+                    <div class="w-[38px] text-sm font-semibold shrink-0">${dayName}</div>
+                    <div class="w-[26px] h-[26px] flex items-center justify-center shrink-0">${icon}</div>
+                    <div class="w-[30px] text-xs font-semibold shrink-0" style="color: var(--precip)">${precip}%</div>
+                    <div class="flex-1 flex items-center gap-2 min-w-0">
+                        <span class="text-[13px] w-[22px] shrink-0" style="color: var(--tx2)">${minTemp}°</span>
+                        <div class="flex-1 h-1 rounded-sm relative overflow-hidden" style="background: var(--track)">
+                            <div class="absolute top-0 bottom-0 rounded-sm" style="left: ${left}%; width: ${width}%; background: linear-gradient(90deg, #9fb3d1, #ffd97a);"></div>
+                        </div>
+                        <span class="text-[13px] w-[22px] text-right font-medium shrink-0">${maxTemp}°</span>
                     </div>
                 </div>
             `;
             uiForecastList.insertAdjacentHTML('beforeend', itemHTML);
         }
+    };
+
+    const renderWeather = (data, city, country) => {
+        const current = data.current;
+        const daily = data.daily;
+        const isDay = current.is_day === 1;
+
+        document.body.dataset.theme = getTheme(current.weather_code, isDay);
+
+        uiCity.textContent = city || 'Unknown City';
+        uiCountry.textContent = country || '';
+        uiCountrySep.style.display = country ? '' : 'none';
+
+        uiTemp.textContent = Math.round(current.temperature_2m);
+        uiCondition.textContent = getWeatherCondition(current.weather_code);
+        uiHeroHigh.textContent = Math.round(daily.temperature_2m_max[0]);
+        uiHeroLow.textContent = Math.round(daily.temperature_2m_min[0]);
+        uiFeelsLike.textContent = Math.round(current.apparent_temperature);
+
+        // UV card (today's max)
+        const uvToday = daily.uv_index_max && daily.uv_index_max.length > 0 ? daily.uv_index_max[0] : null;
+        uiUv.textContent = uvToday != null ? Math.round(uvToday) : '--';
+        uiUvLabel.textContent = uvToday != null ? getUvLabel(uvToday) : '';
+        uiUvBar.style.width = uvToday != null ? `${Math.min(100, uvToday / 11 * 100)}%` : '0%';
+
+        // Wind card
+        uiWind.textContent = Math.round(current.wind_speed_10m);
+        uiWindDir.textContent = getCompass(current.wind_direction_10m);
+        uiWindArrow.style.transform = `rotate(${Math.round(current.wind_direction_10m)}deg)`;
+
+        // Humidity card
+        uiHumidity.textContent = Math.round(current.relative_humidity_2m);
+        uiDewPoint.textContent = Math.round(current.dew_point_2m);
+
+        // Sunrise / Sunset card
+        uiSunrise.textContent = formatClock(daily.sunrise[0]);
+        uiSunset.textContent = formatClock(daily.sunset[0]);
+
+        renderDaily(daily);
 
         weatherCard.classList.remove('hidden');
-        weatherCard.classList.add('flex');
     };
 
     const fetchWeatherData = async (lat, lon, cityName, countryName) => {
         updateStatus('Fetching weather data...', true);
         weatherCard.classList.add('hidden');
-        weatherCard.classList.remove('flex');
 
         if (fetchAbortController) fetchAbortController.abort();
         fetchAbortController = new AbortController();
 
         try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
+            const url = 'https://api.open-meteo.com/v1/forecast'
+                + `?latitude=${lat}&longitude=${lon}`
+                + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
+                + '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max'
+                + '&timezone=auto';
             const response = await fetch(url, { signal: fetchAbortController.signal });
             if (!response.ok) throw new Error('Failed to fetch weather data.');
             const data = await response.json();
@@ -163,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateStatus('Searching for city...', true);
         weatherCard.classList.add('hidden');
-        weatherCard.classList.remove('flex');
 
         if (fetchAbortController) fetchAbortController.abort();
         fetchAbortController = new AbortController();

@@ -22,12 +22,85 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
+            transition: color 0.3s;
+            background: var(--g2);
+            color: var(--tx1);
         }
-        .hide { display: none !important; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 4px; }
+
+        /* ---------- Design tokens (glass / text) ---------- */
+        :root {
+            /* light mode */
+            --tx1: #2b2f36;
+            --tx2: rgba(43, 47, 54, 0.78);
+            --tx3: rgba(43, 47, 54, 0.6);
+            --glass-bg: linear-gradient(rgba(255,255,255,0.28), rgba(255,255,255,0.28)), rgba(255,255,255,0.34);
+            --glass-border: rgba(255,255,255,0.55);
+            --precip: #3f649c;
+            --track: rgba(0,0,0,0.12);
+            --row-border: rgba(0,0,0,0.08);
+        }
+        :root.dark {
+            --tx1: #f7f5f0;
+            --tx2: rgba(242, 239, 233, 0.75);
+            --tx3: rgba(242, 239, 233, 0.62);
+            --glass-bg: linear-gradient(rgba(0,0,0,0.14), rgba(0,0,0,0.14)), rgba(255,255,255,0.10);
+            --glass-border: rgba(255,255,255,0.16);
+            --precip: #a9c4ec;
+            --track: rgba(255,255,255,0.15);
+            --row-border: rgba(255,255,255,0.08);
+        }
+
+        /* ---------- Gradient background themes (dark) ---------- */
+        :root.dark body[data-theme="overcast"]       { --g1: oklch(45% 0.02 250);  --g2: oklch(38% 0.018 245); --g3: oklch(50% 0.018 255); --glow: oklch(56% 0.015 250 / 0.3); }
+        :root.dark body[data-theme="clear"]          { --g1: oklch(62% 0.045 60);  --g2: oklch(54% 0.05 40);   --g3: oklch(68% 0.03 75);   --glow: oklch(70% 0.04 65 / 0.3); }
+        :root.dark body[data-theme="night"]          { --g1: oklch(24% 0.02 265);  --g2: oklch(15% 0.015 260); --g3: oklch(30% 0.025 260); --glow: oklch(36% 0.02 265 / 0.3); }
+        :root.dark body[data-theme="rain"]           { --g1: oklch(42% 0.025 245); --g2: oklch(33% 0.025 250); --g3: oklch(47% 0.02 240);  --glow: oklch(52% 0.02 245 / 0.3); }
+        :root.dark body[data-theme="snow"]           { --g1: oklch(60% 0.012 240); --g2: oklch(52% 0.015 235); --g3: oklch(66% 0.008 245); --glow: oklch(68% 0.01 240 / 0.3); }
+        :root.dark body[data-theme="partly-cloudy"]  { --g1: oklch(55% 0.035 220); --g2: oklch(48% 0.04 90);   --g3: oklch(60% 0.03 210);  --glow: oklch(65% 0.03 150 / 0.3); }
+
+        /* ---------- Gradient background themes (light — same hues, lifted) ---------- */
+        :root:not(.dark) body[data-theme="overcast"]      { --g1: oklch(84% 0.012 250); --g2: oklch(78% 0.012 245); --g3: oklch(88% 0.01 255);  --glow: oklch(92% 0.01 250 / 0.4); }
+        :root:not(.dark) body[data-theme="clear"]         { --g1: oklch(90% 0.04 75);   --g2: oklch(85% 0.045 55);  --g3: oklch(93% 0.03 80);   --glow: oklch(94% 0.04 70 / 0.45); }
+        :root:not(.dark) body[data-theme="night"]         { --g1: oklch(76% 0.025 265); --g2: oklch(70% 0.02 260);  --g3: oklch(82% 0.02 262);  --glow: oklch(87% 0.02 265 / 0.4); }
+        :root:not(.dark) body[data-theme="rain"]          { --g1: oklch(80% 0.02 245);  --g2: oklch(74% 0.02 248);  --g3: oklch(85% 0.015 242); --glow: oklch(89% 0.015 245 / 0.4); }
+        :root:not(.dark) body[data-theme="snow"]          { --g1: oklch(92% 0.006 240); --g2: oklch(87% 0.008 238); --g3: oklch(95% 0.004 245); --glow: oklch(97% 0.005 240 / 0.45); }
+        :root:not(.dark) body[data-theme="partly-cloudy"] { --g1: oklch(86% 0.025 220); --g2: oklch(82% 0.03 95);   --g3: oklch(90% 0.02 215);  --glow: oklch(93% 0.02 170 / 0.4); }
+
+        /* ---------- Components ---------- */
+        .glass-card {
+            border-radius: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .card-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--tx3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .hour-card {
+            flex: 0 0 auto;
+            width: 84px;
+            min-height: 150px;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 14px 6px;
+        }
+        @media (min-width: 768px) {
+            .hour-card { width: 90px; min-height: 160px; padding: 16px 8px; }
+        }
+        .rail { -ms-overflow-style: none; scrollbar-width: none; }
+        .rail::-webkit-scrollbar { display: none; }
+
+        input::placeholder { color: var(--tx3); }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -38,82 +111,118 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen antialiased">
+<body data-theme="overcast" class="min-h-screen antialiased">
 
-    <button id="theme-toggle" class="fixed top-4 right-4 z-20 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle Theme">
-        <svg id="theme-icon-dark" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-        <svg id="theme-icon-light" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
-    </button>
+    <!-- Gradient background + glow -->
+    <div class="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <div class="absolute inset-0 transition-colors duration-500" style="background: linear-gradient(160deg, var(--g1) 0%, var(--g2) 55%, var(--g3) 100%);"></div>
+        <div class="absolute rounded-full -top-20 -right-16 w-[280px] h-[280px] blur-[10px] md:-top-36 md:-right-24 md:w-[520px] md:h-[520px] md:blur-[16px]" style="background: radial-gradient(circle, var(--glow), transparent 70%);"></div>
+    </div>
 
-    <main class="min-h-screen flex flex-col items-center justify-start p-8">
-        <div class="max-w-xl mx-auto flex flex-col items-center justify-start py-10 w-full animate-fade-in px-4">
-            <h1 class="text-3xl font-light tracking-tighter mb-8 text-zinc-900 dark:text-zinc-100">Weather</h1>
+    <main class="max-w-[1440px] mx-auto px-5 pt-6 pb-10 md:px-14 md:pt-10 md:pb-12">
 
-            <!-- Search Section -->
-            <div class="w-full relative mb-8">
+        <!-- Search + theme toggle -->
+        <div class="flex items-center gap-3 mb-6 md:mb-8 max-w-md animate-fade-in">
+            <div class="glass-card flex-1 flex items-center gap-2.5 !rounded-full px-4 py-2.5">
+                <svg class="w-4 h-4 shrink-0" style="color: var(--tx3)" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <input
                     type="text"
                     id="weather-search-input"
                     placeholder="Search city..."
-                    class="w-full bg-transparent text-zinc-900 dark:text-zinc-100 border-b border-zinc-300 dark:border-zinc-800 px-2 py-3 pr-10 focus:outline-none focus:border-zinc-500 transition-colors text-lg placeholder-zinc-400 dark:placeholder-zinc-600"
+                    class="flex-1 min-w-0 bg-transparent text-sm focus:outline-none"
+                    style="color: var(--tx1)"
                     autocomplete="off"
                 >
                 <button
                     id="weather-search-btn"
-                    class="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors active:scale-95"
+                    class="text-[11px] font-semibold uppercase tracking-widest px-2 py-1 rounded-full hover:opacity-70 transition-opacity active:scale-95"
+                    style="color: var(--tx2)"
                     aria-label="Search"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
+                >Go</button>
             </div>
+            <button id="theme-toggle" class="glass-card !rounded-full p-2.5 shrink-0 hover:opacity-70 transition-opacity" aria-label="Toggle Theme" style="color: var(--tx1)">
+                <svg id="theme-icon-dark" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-icon-light" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+            </button>
+        </div>
 
-            <!-- Status / Loading / Error Message -->
-            <div id="weather-status-msg" class="text-zinc-500 text-sm mb-4 min-h-[1.25rem]">
-                <!-- Pulses when loading: animate-pulse -->
-            </div>
+        <!-- Status / Loading / Error Message -->
+        <div id="weather-status-msg" class="text-sm mb-4 min-h-[1.25rem]" style="color: var(--tx2)"></div>
 
-            <!-- Weather Display Card (Hidden by Default) -->
-            <div id="weather-card" class="w-full flex-col hidden gap-4">
+        <!-- Weather Display (Hidden by Default) -->
+        <div id="weather-card" class="hidden animate-fade-in">
+            <div class="flex flex-col gap-6 md:flex-row md:gap-5 md:items-stretch">
 
-                <!-- Current Weather Glassmorphism Card -->
-                <div class="w-full bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-white/40 dark:border-zinc-800/80 shadow-sm dark:shadow-none p-8 flex flex-col items-center">
-                    <h2 id="weather-city" class="text-2xl font-light tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">--</h2>
-                    <p id="weather-country" class="text-zinc-500 text-xs mb-6 uppercase tracking-widest">--</p>
+                <!-- Left column: hero, hourly rail, detail cards -->
+                <div class="flex flex-col gap-6 md:gap-7 md:flex-[1_1_70%] min-w-0">
 
-                    <div class="flex flex-col items-center justify-center mb-6">
-                        <span id="weather-temp" class="text-7xl font-light text-zinc-900 dark:text-zinc-100 tracking-tighter">--°</span>
-                        <span id="weather-condition" class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 font-light tracking-wide">--</span>
+                    <!-- Hero -->
+                    <div class="flex flex-col items-center pt-3 text-center md:pt-0 md:grid md:grid-cols-[auto,1fr] md:items-center md:gap-x-6 md:text-left">
+                        <div class="order-1 md:order-none md:col-start-2 md:row-start-1 md:self-end text-2xl md:text-[22px] font-semibold">
+                            <span id="weather-city">--</span><span id="weather-country-sep">, </span><span id="weather-country"></span>
+                        </div>
+                        <div class="order-2 md:col-start-1 md:row-start-1 md:row-span-2 font-extralight leading-none text-[92px] tracking-[-2px] md:text-[108px] md:tracking-[-3px] mt-1 md:mt-0">
+                            <span id="weather-temp">--</span>°
+                        </div>
+                        <div class="order-3 md:col-start-2 md:row-start-2 md:self-start flex flex-col items-center md:flex-row md:flex-wrap md:items-baseline md:gap-x-1.5 mt-0.5 md:mt-1">
+                            <span id="weather-condition" class="text-xl md:text-[15px] font-medium md:font-normal" style="color: var(--tx2)">--</span>
+                            <span class="hidden md:inline" style="color: var(--tx3)">·</span>
+                            <span class="text-base md:text-[15px] mt-1.5 md:mt-0" style="color: var(--tx2)">H:<span id="hero-high">--</span>°&#8194;L:<span id="hero-low">--</span>°</span>
+                            <span class="hidden md:inline" style="color: var(--tx3)">·</span>
+                            <span class="text-[13px] md:text-[15px] mt-1 md:mt-0" style="color: var(--tx3)">Feels like <span id="weather-feels-like">--</span>°</span>
+                        </div>
                     </div>
 
-                    <div class="w-full grid grid-cols-4 gap-2 mt-4 border-t border-zinc-200 dark:border-zinc-800/50 pt-6">
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Feels</span>
-                            <span id="weather-feels-like" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--°</span>
+                    <!-- Hourly rail -->
+                    <div id="hourly-rail-outer" class="flex flex-col gap-2.5 md:gap-3 -mx-2.5 md:mx-0 min-w-0">
+                        <div class="px-3.5 md:px-0 text-[13px] font-semibold uppercase" style="color: var(--tx3); letter-spacing: 0.6px;">Hourly forecast</div>
+                        <div id="hourly-rail" class="rail flex gap-2.5 md:gap-3 overflow-x-auto pt-0.5 pb-1.5 px-1 md:px-0.5" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;"></div>
+                    </div>
+
+                    <!-- Detail cards -->
+                    <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3.5">
+                        <div class="glass-card p-4">
+                            <div class="card-label">UV Index</div>
+                            <div class="text-3xl md:text-[28px] font-light mt-0.5" id="weather-uv">--</div>
+                            <div class="text-[13px] mt-0.5" style="color: var(--tx2)" id="uv-label">&nbsp;</div>
+                            <div class="w-full h-1.5 md:h-[5px] rounded-[3px] mt-2.5 overflow-hidden" style="background: var(--track)">
+                                <div id="uv-bar" class="h-full rounded-[3px]" style="width: 0%; background: linear-gradient(90deg, #9fd68a, #ffd97a);"></div>
+                            </div>
                         </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Wind</span>
-                            <span id="weather-wind" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--</span>
+                        <div class="glass-card p-4">
+                            <div class="card-label">Wind</div>
+                            <div class="text-3xl md:text-[28px] font-light mt-0.5" id="weather-wind">--</div>
+                            <div class="text-[13px] mt-0.5" style="color: var(--tx2)">km/h · <span id="wind-dir">--</span></div>
+                            <div class="flex items-center justify-center mt-2">
+                                <svg id="wind-arrow" width="28" height="28" viewBox="0 0 30 30" class="transition-transform duration-500">
+                                    <circle cx="15" cy="15" r="13" fill="none" stroke="var(--track)" stroke-width="1.5"></circle>
+                                    <path d="M15 6L20 18H10Z" fill="var(--tx1)"></path>
+                                </svg>
+                            </div>
                         </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Hum</span>
-                            <span id="weather-humidity" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--%</span>
+                        <div class="glass-card p-4">
+                            <div class="card-label">Humidity</div>
+                            <div class="text-3xl md:text-[28px] font-light mt-0.5"><span id="weather-humidity">--</span>%</div>
+                            <div class="text-[13px] mt-0.5" style="color: var(--tx2)">Dew point <span id="dew-point">--</span>°</div>
                         </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">UV</span>
-                            <span id="weather-uv" class="text-sm font-light text-zinc-700 dark:text-zinc-300">--</span>
+                        <div class="glass-card p-4">
+                            <div class="card-label">Sunrise / Sunset</div>
+                            <div class="text-[22px] md:text-xl font-light mt-0.5" id="sunrise">--</div>
+                            <div class="text-[13px] mt-0.5" style="color: var(--tx2)">Sets <span id="sunset">--</span></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 7-Day Forecast Glassmorphism Card -->
-                <div class="w-full bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-white/40 dark:border-zinc-800/80 shadow-sm dark:shadow-none p-6 flex flex-col">
-                    <h3 class="text-xs text-zinc-500 uppercase tracking-widest mb-4 ml-1">7-Day Forecast</h3>
-                    <div id="weather-forecast-list" class="flex flex-col space-y-4">
-                        <!-- Forecast items will be injected here -->
+                <!-- Right column: 7-day forecast -->
+                <div class="md:flex-[1_1_30%] min-w-0 flex flex-col">
+                    <div class="glass-card p-3.5 md:px-[18px] md:py-4 md:flex-1 flex flex-col">
+                        <div class="card-label mb-2">7-Day Forecast</div>
+                        <div id="weather-forecast-list" class="flex flex-col md:flex-1 md:justify-between"></div>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
