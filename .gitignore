@@ -1,0 +1,25 @@
+# === Claude & AI Tools ===
+.claude/
+.anthropic/
+claude-session.json
+*.log
+.env
+.env.local
+secrets.json
+
+# === Среди за разработка (IDEs) ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# === Операционни системи ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Твоята специфична папка ===
+images-edit
