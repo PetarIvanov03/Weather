@@ -26,6 +26,8 @@ The UI implements a Claude Design project (mobile + desktop pages) as one respon
 - **Soft SVG icon set** — sun / moon / cloud / rain from the design, extended in the same style with partly-cloudy (day & night), snow, fog, and thunder to cover all WMO weather codes
 - Inter, thin-weight hero type (100–108px), uppercase tracked labels
 
+**Icon / branding** — the app icon (sun with a cloud in front, matching the soft glassmorphism weather theme) lives at `assets/icon.png`, with favicon, apple-touch, and PWA sizes generated into `assets/icons/`.
+
 ## Data sources
 
 All client-side, all free, no keys:
@@ -52,9 +54,10 @@ then open <http://localhost:8000>.
 ## Project structure
 
 ```
-index.html   # markup, design tokens (CSS custom properties), theme gradients
-app.js       # all logic: fetching, rendering, icons, themes, search, states
-CNAME        # GitHub Pages custom domain
+index.html      # markup, design tokens (CSS custom properties), theme gradients
+app.js          # all logic: fetching, rendering, icons, themes, search, states
+assets/icons/   # generated favicon / apple-touch / PWA icon sizes
+CNAME           # GitHub Pages custom domain
 ```
 
 ## Implementation notes
