@@ -130,8 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ICONS = {
         sun: (w) => `<svg class="wx-icon" width="${w}" height="${w}" viewBox="0 0 30 30">
-            <circle cx="15" cy="15" r="7" fill="#ffd97a"></circle>
-            <g stroke="#ffd97a" stroke-width="2" stroke-linecap="round">
+            <circle cx="15" cy="15" r="7" fill="#ffc531"></circle>
+            <g stroke="#ffc531" stroke-width="2.2" stroke-linecap="round">
                 <line x1="15" y1="1" x2="15" y2="5"></line><line x1="15" y1="25" x2="15" y2="29"></line>
                 <line x1="1" y1="15" x2="5" y2="15"></line><line x1="25" y1="15" x2="29" y2="15"></line>
                 <line x1="5.5" y1="5.5" x2="8.2" y2="8.2"></line><line x1="21.8" y1="21.8" x2="24.5" y2="24.5"></line>
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <rect x="7" y="18" width="22" height="8" rx="4" fill="#eef1f5"></rect>
         </svg>`,
         partly: (w) => `<svg class="wx-icon" width="${w}" height="${Math.round(w * 30 / 34)}" viewBox="0 0 34 30">
-            <circle cx="23" cy="9" r="6" fill="#ffd97a"></circle>
+            <circle cx="23" cy="9" r="6" fill="#ffc531"></circle>
             <circle cx="12" cy="17" r="7.5" fill="#e9edf3" opacity="0.95"></circle>
             <circle cx="19" cy="15" r="8" fill="#f4f6f9"></circle>
             <rect x="7" y="18" width="21" height="8" rx="4" fill="#eef1f5"></rect>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <circle cx="12" cy="11" r="7" fill="#c7cfdb" opacity="0.95"></circle>
             <circle cx="19" cy="9" r="8" fill="#d4dae3"></circle>
             <rect x="7" y="13" width="20" height="7" rx="3.5" fill="#ccd3dd"></rect>
-            <path d="M19 19l-6 8h4.2L15 34l8-10h-4.4l2.6-5z" fill="#ffd97a"></path>
+            <path d="M19 19l-6 8h4.2L15 34l8-10h-4.4l2.6-5z" fill="#ffc531"></path>
         </svg>`,
     };
     const getIcon = (code, isDay, size) => ICONS[getIconType(code, isDay)](size);
@@ -455,6 +455,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const span = Math.max(1, weekHi - weekLo);
 
+        // Apple-Weather-style temperature color scale: cool ≤14°C → yellow 21°C → warm ≥33°C
+        const tempColor = (temp) => {
+            const stops = [
+                [14, [ 64, 196, 209]],  // cool blue-green
+                [21, [255, 210,  63]],  // yellow
+                [33, [255,  94,  58]],  // warm red-orange
+            ];
+            const lerp = (a, b, f) => Math.round(a + (b - a) * f);
+            const t = Math.max(stops[0][0], Math.min(stops[stops.length - 1][0], temp));
+            for (let i = 0; i < stops.length - 1; i++) {
+                const [t0, c0] = stops[i], [t1, c1] = stops[i + 1];
+                if (t <= t1) {
+                    const f = (t - t0) / (t1 - t0);
+                    return `rgb(${lerp(c0[0], c1[0], f)}, ${lerp(c0[1], c1[1], f)}, ${lerp(c0[2], c1[2], f)})`;
+                }
+            }
+            const last = stops[stops.length - 1][1];
+            return `rgb(${last[0]}, ${last[1]}, ${last[2]})`;
+        };
+
         let html = '';
         for (let i = 0; i < days; i++) {
             const dayName = getDayName(daily.time[i], i);
@@ -471,13 +491,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="t-body-emph" style="line-height: 1;">${dayName}</div>
                     <div class="day-icon">${icon}</div>
                     <div class="t-cap-accent" style="line-height: 1;">${precip}%</div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="day-bar-wrap">
                         <span class="t-body" style="width: 24px; line-height: 1;">${minTemp}°</span>
-                        <div style="flex: 1; height: 4px; border-radius: 2px; background: var(--track); position: relative; overflow: hidden;">
-                            <div style="position: absolute; left: ${left}%; width: ${width}%; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #9fb3d1, #ffd97a);"></div>
+                        <div class="temp-track">
+                            <div class="temp-fill" style="left: ${left}%; width: ${width}%; background: linear-gradient(90deg, ${tempColor(daily.temperature_2m_min[i])}, ${tempColor(daily.temperature_2m_max[i])});"></div>
                         </div>
-                        <span class="t-body-emph" style="width: 26px; text-align: right; line-height: 1;">${maxTemp}°</span>
                     </div>
+                    <span class="t-body-emph day-hi" style="line-height: 1;">${maxTemp}°</span>
                 </div>
             `;
         }
@@ -539,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.setAttribute('placeholder', dict.searchPlaceholder);
         searchBtn.setAttribute('aria-label', dict.go);
         errorRetry.textContent = dict.errRetry;
-        langToggle.textContent = lang().toUpperCase();
+        langToggle.textContent = (lang() === 'en' ? 'bg' : 'en').toUpperCase();
     };
 
     const applyLanguage = () => {
@@ -656,10 +676,10 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = result.name;
         searchInput.blur();
         // Auto language follows the location unless the user has toggled manually
-        if (!manualLang) {
-            autoLang = result.country_code === 'BG' ? 'bg' : 'en';
-            applyStaticI18n();
-        }
+        // if (!manualLang) {
+        //     autoLang = result.country_code === 'BG' ? 'bg' : 'en';
+        //     applyStaticI18n();
+        // }
         fetchWeatherData(result.latitude, result.longitude, {
             name: result.name,
             country: result.country || result.admin1 || '',
@@ -781,10 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 const loc = await reverseGeocode(lat, lon);
-                if (!manualLang) {
-                    autoLang = loc.country_code === 'BG' ? 'bg' : 'en';
-                    applyStaticI18n();
-                }
+                // if (!manualLang) {
+                //     autoLang = loc.country_code === 'BG' ? 'bg' : 'en';
+                //     applyStaticI18n();
+                // }
                 fetchWeatherData(lat, lon, { name: loc.name, country: loc.country });
             },
             (error) => {

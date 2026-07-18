@@ -9,299 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* =========================================================
-           Design system — imported from the Weather app design
-           (mobile Weather.dc.html + desktop Weather Desktop.dc.html).
-           Text always sits on a real photo, so all copy is light with
-           a legibility shadow; light/dark is driven by the background
-           image's day/night, exposed as [data-bg-dark] on <html>.
-           ========================================================= */
-        :root {
-            --sh: 0 1px 3px rgba(0, 0, 0, 0.4);
-            --accent: #a1c7ff;
-            --track: rgba(255, 255, 255, 0.15);
-            /* Glass — light-background variant (default) */
-            --glass-bg: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.45);
-            --glass-filter: blur(12px) saturate(0.9);
-        }
-        [data-bg-dark="true"] {
-            /* Glass — dark-background variant */
-            --glass-bg: rgba(0, 0, 0, 0.20);
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --glass-filter: blur(12px) saturate(1.1);
-        }
-
-        * { box-sizing: border-box; }
-        html, body { margin: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            min-height: 100vh;
-            background: oklch(20% 0.01 250);
-            -webkit-font-smoothing: antialiased;
-            color: #fff;
-        }
-
-        /* ---------- Background: crossfading photo layers ---------- */
-        /* Mobile: full-bleed adaptive-brightness photo.
-           Desktop: the SAME scene as a heavily blurred surround. */
-        #bg { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
-        #bg .bg-layer {
-            position: absolute; inset: 0;
-            background-size: cover; background-position: center;
-            opacity: 0; transition: opacity 700ms ease;
-        }
-        [data-bg-dark="false"] #bg .bg-layer { filter: brightness(1.08); }
-
-        /* Mobile scrim for hero/text legibility over the full-bleed photo */
-        #bg-scrim {
-            position: fixed; inset: 0; z-index: -1; pointer-events: none;
-            background: linear-gradient(180deg,
-                rgba(6, 12, 24, 0.30) 0%,
-                rgba(6, 12, 24, 0.14) 30%,
-                rgba(6, 12, 24, 0.38) 75%,
-                rgba(4, 10, 20, 0.60) 100%);
-        }
-
-        @media (min-width: 768px) {
-            #bg { inset: -80px; }                         /* overscan so blurred edges never gap */
-            #bg .bg-layer { filter: blur(20px); }          /* dark surround: natural brightness */
-            [data-bg-dark="false"] #bg .bg-layer { filter: blur(56px) brightness(1.12) saturate(1.05); }
-            #bg-scrim { background: rgba(0, 0, 0, 0.04); }  /* desktop: framed panel carries its own contrast */
-        }
-
-        /* ---------- Typography tokens ---------- */
-        .t-display     { font-weight: 300; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 2px 12px rgba(0,0,0,0.3); font-size: 104px; line-height: 1; letter-spacing: -2px; }
-        .t-title       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 24px; }
-        .t-value       { font-weight: 300; color: #fff; text-shadow: var(--sh); font-size: 22px; line-height: 1; }
-        .t-body        { font-weight: 400; color: #f2efe9; opacity: 0.85; text-shadow: var(--sh); font-size: 15px; }
-        .t-body-emph   { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 15px; }
-        .t-label       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 13px; }
-        .t-cap-heading { font-weight: 600; color: #f2efe9; opacity: 0.85; text-shadow: var(--sh); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .t-cap         { font-weight: 400; color: #f2efe9; opacity: 0.85; text-shadow: var(--sh); font-size: 12px; }
-        .t-cap-emph    { font-weight: 600; color: #f2efe9; opacity: 0.85; text-shadow: var(--sh); font-size: 12px; }
-        .t-cap-accent  { font-weight: 600; color: var(--accent); text-shadow: var(--sh); font-size: 12px; }
-        .t-condition   { font-weight: 400; color: #f2efe9; opacity: 0.9; text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 10px rgba(0,0,0,0.3); font-size: 24px; }
-        @media (min-width: 768px) {
-            .t-display     { font-size: 108px; letter-spacing: -3px; }
-            .t-title       { font-size: 26px; }
-            .t-value       { font-size: 28px; }
-            .t-body        { font-size: 17px; }
-            .t-body-emph   { font-size: 17px; }
-            .t-label       { font-size: 15px; }
-            .t-cap-heading { font-size: 13px; }
-            .t-cap         { font-size: 13px; }
-            .t-cap-emph    { font-size: 13px; }
-            .t-cap-accent  { font-size: 13px; }
-            .t-condition   { font-size: 26px; }
-        }
-
-        /* ---------- Glass surface ---------- */
-        .glass {
-            border-radius: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: var(--glass-filter);
-            -webkit-backdrop-filter: var(--glass-filter);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-        }
-
-        .wx-icon { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35)); }
-
-        /* ---------- Layout shell ---------- */
-        main {
-            max-width: 1900px;
-            margin: 0 auto;
-            padding: 14px 14px 28px;
-        }
-        @media (min-width: 768px) {
-            main { height: 100vh; display: flex; flex-direction: column; padding: 18px 18px 18px; overflow: hidden; }
-        }
-
-        /* ---------- Header: search + language toggle ---------- */
-        .app-header {
-            position: relative; z-index: 30;
-            display: flex; align-items: center; gap: 12px;
-            margin-bottom: 16px; max-width: 480px;
-        }
-        @media (min-width: 768px) { .app-header { flex-shrink: 0; margin-bottom: 14px; } }
-
-        .search-pill {
-            display: flex; align-items: center; gap: 10px;
-            border-radius: 999px; padding: 10px 16px;
-        }
-        #weather-search-input {
-            flex: 1; min-width: 0; background: transparent; border: 0; outline: none;
-            color: #fff; text-shadow: var(--sh); font-size: 14px; font-family: inherit;
-        }
-        #weather-search-input::placeholder { color: rgba(255, 255, 255, 0.7); }
-        #weather-search-btn {
-            flex-shrink: 0; border: 0; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            width: 36px; height: 36px; margin: -4px -6px -4px 0; border-radius: 999px;
-            color: #fff; text-shadow: var(--sh);
-            background: rgba(255, 255, 255, 0.16);
-            transition: opacity 0.2s, background 0.2s;
-        }
-        #weather-search-btn:hover { opacity: 0.85; background: rgba(255, 255, 255, 0.24); }
-        #weather-search-btn:active { transform: scale(0.94); }
-
-        .icon-btn {
-            flex-shrink: 0; cursor: pointer; border-radius: 999px;
-            display: flex; align-items: center; justify-content: center;
-            min-width: 42px; height: 42px; padding: 0 12px;
-            color: #fff; text-shadow: var(--sh); font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
-            transition: opacity 0.2s;
-        }
-        .icon-btn:hover { opacity: 0.75; }
-        .icon-btn:active { transform: scale(0.95); }
-
-        /* iOS Safari auto-zooms on focus when input font-size < 16px */
-        @media (max-width: 767px), (pointer: coarse) {
-            #weather-search-input { font-size: 16px; line-height: 20px; }
-        }
-
-        /* Search autocomplete dropdown — opaque enough to read over any photo */
-        #search-dropdown {
-            position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 40;
-            border-radius: 16px; overflow-y: auto; max-height: 288px; padding: 6px;
-            background: rgba(18, 22, 30, 0.72);
-            backdrop-filter: blur(18px) saturate(1.1);
-            -webkit-backdrop-filter: blur(18px) saturate(1.1);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        }
-        .search-option {
-            display: block; width: 100%; text-align: left; border: 0; background: transparent;
-            padding: 9px 12px; border-radius: 10px; cursor: pointer;
-            font-size: 14px; color: #fff; font-family: inherit;
-        }
-        .search-option[aria-selected="true"], .search-option:hover { background: rgba(255, 255, 255, 0.12); }
-        .search-muted { color: rgba(255, 255, 255, 0.55); }
-
-        /* ---------- Weather layout ---------- */
-        .wx-layout { display: flex; flex-direction: column; gap: 18px; }
-        @media (min-width: 768px) {
-            .wx-layout { flex-direction: row; gap: 16px; height: 100%; align-items: stretch; min-height: 0; }
-        }
-
-        /* Left panel — plain on mobile, framed photo card on desktop */
-        .wx-panel { position: relative; min-width: 0; }
-        @media (min-width: 768px) {
-            .wx-panel {
-                flex: 1 1 70%; min-height: 0; overflow: hidden;
-                border-radius: 28px; border: 1px solid var(--glass-border);
-                box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
-            }
-        }
-        .panel-photo { display: none; }
-        .panel-photo .pp-layer {
-            position: absolute; inset: 0; background-size: cover; background-position: center;
-            opacity: 0; transition: opacity 700ms ease; filter: brightness(1.05);
-        }
-        @media (min-width: 768px) { .panel-photo { display: block; position: absolute; inset: 0; z-index: 0; } }
-
-        /* Top-weighted scrim so hero + rail text stays legible on bright photos.
-           Strong for light scenes, gentle for already-dark ones. Desktop only —
-           mobile legibility is carried by the full-bleed #bg-scrim. */
-        .panel-scrim { display: none; }
-        @media (min-width: 768px) {
-            .panel-scrim {
-                display: block; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-                background: linear-gradient(180deg, rgba(8,14,24,0.44) 0%, rgba(8,14,24,0.24) 22%, rgba(8,14,24,0.10) 45%, rgba(8,14,24,0) 66%);
-            }
-        }
-        [data-bg-dark="true"] .panel-scrim {
-            background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.07) 40%, rgba(0,0,0,0) 66%);
-        }
-
-        .panel-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 18px; }
-        @media (min-width: 768px) { .panel-inner { gap: 22px; padding: 18px 20px; height: 100%; overflow-y: auto; } }
-
-        /* Hero */
-        .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 14px; }
-        .hero-top { order: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .hero-temp { order: 2; margin: 6px 0 0; text-transform: none; }
-        .hero-bottom { order: 3; display: flex; flex-direction: column; align-items: center; gap: 3px; margin-top: 2px; }
-        .hero-city { text-transform: capitalize; }
-        @media (min-width: 768px) {
-            .hero { display: grid; grid-template-columns: auto 1fr; column-gap: 24px; align-items: center; text-align: left; padding-top: 0; }
-            .hero-temp { order: 0; grid-column: 1; grid-row: 1 / span 2; align-self: center; margin: 0; }
-            .hero-top { order: 0; grid-column: 2; grid-row: 1; align-self: end; flex-direction: row; align-items: baseline; gap: 14px; }
-            .hero-bottom { order: 0; grid-column: 2; grid-row: 2; align-self: start; align-items: flex-start; text-align: left; }
-        }
-
-        /* Hourly rail */
-        .rail-outer { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-        .rail-viewport { position: relative; margin: 0 -14px; padding: 0 14px; }
-        @media (min-width: 768px) { .rail-viewport { margin: 0 -20px; padding: 0 20px; } }
-        .rail-chevron {
-            position: absolute; top: 50%; width: 18px; text-align: center; transform: translateY(-50%);
-            pointer-events: none; font-size: 17px; line-height: 1; color: #fff; opacity: 0.3; z-index: 2;
-        }
-        .rail {
-            display: flex; gap: 8px; width: 100%; overflow-x: auto;
-            scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; touch-action: pan-x;
-            padding: 2px 0 6px;
-        }
-        @media (min-width: 768px) { .rail { gap: 10px; padding: 6px 0 16px; } }
-        .rail::-webkit-scrollbar { display: none; }
-        .rail { -ms-overflow-style: none; scrollbar-width: none; }
-        .hour-card {
-            flex: 0 0 auto; width: 84px; min-height: 160px; scroll-snap-align: start;
-            display: grid; grid-template-rows: 20px 38px 28px 20px 20px 18px; row-gap: 5px;
-            justify-items: center; align-items: center; padding: 10px 6px;
-            border-radius: 20px; background: var(--glass-bg);
-            backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter);
-            border: 1px solid var(--glass-border); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-        @media (min-width: 768px) {
-            .hour-card { width: 90px; min-height: 130px; grid-template-rows: 16px 34px 22px 16px 16px 14px; row-gap: 4px; }
-        }
-        .hour-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
-        @media (min-width: 768px) { .hour-icon { width: 36px; height: 36px; } }
-
-        /* Secondary cards */
-        .secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (min-width: 768px) { .secondary { grid-template-columns: repeat(4, 1fr); gap: 14px; } }
-        .info-card { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-        @media (min-width: 768px) { .info-card { padding: 14px; } }
-        .info-value-row { display: flex; align-items: center; gap: 8px; min-height: 30px; }
-        @media (min-width: 768px) { .info-value-row { min-height: 38px; } }
-        .bar-track { width: 100%; height: 4px; border-radius: 3px; background: var(--track); overflow: hidden; }
-        @media (min-width: 768px) { .bar-track { height: 5px; } }
-
-        /* Right column: 14-day forecast */
-        .wx-right { min-width: 0; }
-        @media (min-width: 768px) { .wx-right { flex: 1 1 30%; min-height: 0; display: flex; } }
-        .forecast-card { padding: 14px 16px; display: flex; flex-direction: column; }
-        @media (min-width: 768px) { .forecast-card { padding: 20px 22px; flex: 1; min-height: 0; } }
-        .forecast-scroll { display: flex; flex-direction: column; }
-        @media (min-width: 768px) { .forecast-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; } }
-        .forecast-scroll::-webkit-scrollbar { display: none; }
-        .forecast-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .day-row {
-            display: grid; grid-template-columns: 42px 26px 40px 1fr; align-items: center; gap: 10px;
-            padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .day-row:first-child { border-top: 0; }
-        @media (min-width: 768px) { .day-row { grid-template-columns: 44px 28px 40px 1fr; padding: 9px 0; } }
-        .day-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
-
-        /* ---------- State screens ---------- */
-        .state-wrap { padding-top: 40px; }
-        @media (min-width: 768px) { .state-wrap { padding-top: 64px; } }
-        .spinner {
-            width: 36px; height: 36px; border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.25); border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .hidden { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -315,7 +23,7 @@
     <main>
         <!-- Header: city search + language toggle -->
         <div class="app-header animate-fade-in">
-            <div style="position: relative; flex: 1;">
+            <div class="search-wrap">
                 <div class="search-pill glass">
                     <input type="text" id="weather-search-input" placeholder="Search city…" autocomplete="off"
                         role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
@@ -332,28 +40,28 @@
 
         <!-- State screens -->
         <div id="state-screen" class="hidden animate-fade-in state-wrap" role="status" aria-live="polite">
-            <div class="glass" style="width: 100%; max-width: 360px; margin: 0 auto; padding: 44px 32px; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                <div id="state-loading" class="hidden" style="flex-direction: column; align-items: center; gap: 20px;">
+            <div class="glass state-card">
+                <div id="state-loading" class="hidden state-block state-block--loading">
                     <div class="spinner"></div>
-                    <p id="loading-message" class="t-body" style="opacity: 1;">Loading…</p>
+                    <p id="loading-message" class="t-body loading-message">Loading…</p>
                 </div>
-                <div id="state-error" class="hidden" style="flex-direction: column; align-items: center; gap: 12px;">
+                <div id="state-error" class="hidden state-block">
                     <svg width="46" height="41" viewBox="0 0 34 30" opacity="0.9" aria-hidden="true">
                         <circle cx="12" cy="16" r="8" fill="#e9edf3" opacity="0.95"></circle>
                         <circle cx="20" cy="13" r="9" fill="#f4f6f9"></circle>
                         <rect x="7" y="18" width="22" height="8" rx="4" fill="#eef1f5"></rect>
                         <line x1="6" y1="4" x2="28" y2="27" stroke="#9fb3d1" stroke-width="2.5" stroke-linecap="round"></line>
                     </svg>
-                    <p id="error-title" class="t-body-emph" style="margin: 4px 0 0;">Something went wrong</p>
+                    <p id="error-title" class="t-body-emph state-title">Something went wrong</p>
                     <p id="error-message" class="t-body">Could not load weather data.</p>
-                    <button id="error-retry" class="glass" style="border-radius: 999px; padding: 8px 20px; margin-top: 6px; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; text-shadow: var(--sh);">Try again</button>
+                    <button id="error-retry" class="glass state-retry-btn">Try again</button>
                 </div>
-                <div id="state-empty" class="hidden" style="flex-direction: column; align-items: center; gap: 12px;">
-                    <svg class="wx-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color: rgba(255,255,255,0.75);" aria-hidden="true">
+                <div id="state-empty" class="hidden state-block">
+                    <svg class="wx-icon empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <p id="empty-title" class="t-body-emph" style="margin: 4px 0 0;">No location set</p>
+                    <p id="empty-title" class="t-body-emph state-title">No location set</p>
                     <p id="empty-message" class="t-body">Search for a city above to see the weather.</p>
                 </div>
             </div>
@@ -401,7 +109,7 @@
                             <div class="glass info-card">
                                 <div class="t-cap-heading" data-i18n="uvIndex">UV Index</div>
                                 <div class="info-value-row"><span class="t-value" id="weather-uv">--</span></div>
-                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <div class="uv-bar-wrap">
                                     <span class="t-body" id="uv-label">&nbsp;</span>
                                     <div class="bar-track"><div id="uv-bar" style="width: 0%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #9fd68a, #ffd97a);"></div></div>
                                 </div>
@@ -435,7 +143,7 @@
                 <!-- Right column: 14-day forecast -->
                 <aside class="wx-right">
                     <div class="glass forecast-card">
-                        <div class="t-cap-heading" style="margin-bottom: 8px;" data-i18n="forecast14">14-Day Forecast</div>
+                        <div class="t-cap-heading forecast-heading" data-i18n="forecast14">14-Day Forecast</div>
                         <div id="weather-forecast-list" class="forecast-scroll"></div>
                     </div>
                 </aside>
