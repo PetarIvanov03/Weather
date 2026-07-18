@@ -1,4 +1,4 @@
-# PlayHub — Weather
+# Weather
 
 A single-page weather app. Search any city (with autocomplete) or use your current location to see live conditions, an hourly rail, and a 7-day forecast — powered by the free [Open-Meteo](https://open-meteo.com/) API, no API key required.
 
