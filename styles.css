@@ -280,6 +280,20 @@ main {
 .bar-track { width: 100%; height: 4px; border-radius: 3px; background: var(--track); overflow: hidden; }
 @media (min-width: 768px) { .bar-track { height: 5px; } }
 .uv-bar-wrap { display: flex; flex-direction: column; gap: 5px; }
+#uv-bar {
+    background-image: linear-gradient(90deg,
+        #4fc3a1 0%,      /* UV 0  */
+        #8ed07c 18.2%,   /* UV 2  */
+        #ffd97a 36.4%,   /* UV 4  — yellow */
+        #ffc95e 45.5%,   /* UV 5  — yellow */
+        #ff9f45 54.5%,   /* UV 6  — orange */
+        #f97316 63.6%,   /* UV 7  — orange into red */
+        #e8442e 72.7%,   /* UV 8  — red */
+        #c62828 100%     /* UV 11 */
+    );
+    background-repeat: no-repeat;
+    transition: width 400ms ease, background-size 400ms ease;
+}
 
 /* Right column: 14-day forecast */
 .wx-right { min-width: 0; }

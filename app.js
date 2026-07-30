@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         en: {
             searchPlaceholder: 'Search city…',
             go: 'Go',
+            locate: 'Use my location',
             hourly: 'Hourly forecast',
             forecast14: '14-Day Forecast',
             uvIndex: 'UV Index',
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bg: {
             searchPlaceholder: 'Търсене на град…',
             go: 'Търси',
+            locate: 'Използвай моето местоположение',
             hourly: 'Почасова прогноза',
             forecast14: '14-дневна прогноза',
             uvIndex: 'UV индекс',
@@ -331,7 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
        ===================================================================== */
     const searchInput = document.getElementById('weather-search-input');
     const searchBtn = document.getElementById('weather-search-btn');
-    const langToggle = document.getElementById('lang-toggle');
+    // const langToggle = document.getElementById('lang-toggle'); // swapped for #locate-btn — logic kept below, commented out
+    const locateBtn = document.getElementById('locate-btn');
     const weatherCard = document.getElementById('weather-card');
 
     const stateScreen = document.getElementById('state-screen');
@@ -548,7 +551,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const uvToday = daily.uv_index_max && daily.uv_index_max.length ? daily.uv_index_max[0] : null;
         uiUv.textContent = uvToday != null ? Math.round(uvToday) : '--';
         uiUvLabel.textContent = uvToday != null ? getUvLabel(uvToday) : '';
-        uiUvBar.style.width = uvToday != null ? `${Math.min(100, uvToday / 11 * 100)}%` : '0%';
+        const uvPct = uvToday != null ? Math.min(100, uvToday / 11 * 100) : 0;
+        uiUvBar.style.width = `${uvPct}%`;
+        uiUvBar.style.backgroundSize = uvPct > 0 ? `${100 / (uvPct / 100)}% 100%` : '100% 100%';
 
         uiWind.textContent = Math.round(current.wind_speed_10m);
         uiWindDir.textContent = getCompass(current.wind_direction_10m);
@@ -579,7 +584,8 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.setAttribute('placeholder', dict.searchPlaceholder);
         searchBtn.setAttribute('aria-label', dict.go);
         errorRetry.textContent = dict.errRetry;
-        langToggle.textContent = (lang() === 'en' ? 'bg' : 'en').toUpperCase();
+        locateBtn.setAttribute('aria-label', dict.locate);
+        // langToggle.textContent = (lang() === 'en' ? 'bg' : 'en').toUpperCase();
     };
 
     const applyLanguage = () => {
@@ -598,11 +604,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    langToggle.addEventListener('click', () => {
-        manualLang = lang() === 'en' ? 'bg' : 'en';
-        localStorage.setItem('weatherLang', manualLang);
-        applyLanguage();
-    });
+    // langToggle.addEventListener('click', () => {
+    //     manualLang = lang() === 'en' ? 'bg' : 'en';
+    //     localStorage.setItem('weatherLang', manualLang);
+    //     applyLanguage();
+    // });
+
+    /* =====================================================================
+       Last-location persistence (localStorage — static site, no cookies)
+       ===================================================================== */
+    const saveLastLocation = (lat, lon, meta) => {
+        try {
+            localStorage.setItem('weatherLastLocation', JSON.stringify({
+                v: 1, lat, lon, name: meta.name, country: meta.country,
+            }));
+        } catch (e) { /* private mode / quota — non-fatal */ }
+    };
+
+    const readLastLocation = () => {
+        try {
+            const raw = localStorage.getItem('weatherLastLocation');
+            if (!raw) return null;
+            const p = JSON.parse(raw);
+            if (p && p.v === 1 && typeof p.lat === 'number' && typeof p.lon === 'number') return p;
+        } catch (e) { /* corrupt entry */ }
+        return null;
+    };
 
     /* =====================================================================
        Weather fetch
@@ -625,6 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Failed to fetch weather data.');
             const data = await response.json();
 
+            saveLastLocation(lat, lon, meta);
             lastRender = { data, meta };
             renderWeather(data, meta);
         } catch (err) {
@@ -811,29 +839,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const locateAndFetch = () => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const loc = await reverseGeocode(lat, lon);
+                    // if (!manualLang) {
+                    //     autoLang = loc.country_code === 'BG' ? 'bg' : 'en';
+                    //     applyStaticI18n();
+                    // }
+                    fetchWeatherData(lat, lon, { name: loc.name, country: loc.country });
+                },
+                (error) => {
+                    console.warn('Geolocation denied or failed:', error);
+                    showState('empty');
+                },
+                { timeout: 10000 }
+            );
+        } else {
+            showState('empty');
+        }
+    };
+
+    locateBtn.addEventListener('click', () => {
+        showState('loading', t().loadingLocate);
+        locateAndFetch();
+    });
+
     // Initial paint
     applyStaticI18n();
-    showState('loading', t().loadingLocate);
 
-    if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const loc = await reverseGeocode(lat, lon);
-                // if (!manualLang) {
-                //     autoLang = loc.country_code === 'BG' ? 'bg' : 'en';
-                //     applyStaticI18n();
-                // }
-                fetchWeatherData(lat, lon, { name: loc.name, country: loc.country });
-            },
-            (error) => {
-                console.warn('Geolocation denied or failed:', error);
-                showState('empty');
-            },
-            { timeout: 10000 }
-        );
+    const savedLocation = readLastLocation();
+    if (savedLocation) {
+        showState('loading', t().loadingFetch);
+        fetchWeatherData(savedLocation.lat, savedLocation.lon, { name: savedLocation.name, country: savedLocation.country });
     } else {
-        showState('empty');
+        showState('loading', t().loadingLocate);
+        locateAndFetch();
     }
 });
