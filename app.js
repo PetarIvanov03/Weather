@@ -200,6 +200,25 @@ document.addEventListener('DOMContentLoaded', () => {
        16 photos exist locally; the four "always day/night" conditions fall
        back sunrise→day, sunset→night. Missing → gradient.
        ===================================================================== */
+    const CARD_COLORS = {
+        'clear-day':             '#294969',
+        'clear-night':           '#1d3049',
+        'clear-sunrise':         '#2c3f71',
+        'clear-sunset':          '#602842',
+        'fog-day':               '#3e4956',
+        'fog-night':             '#2d353e',
+        'overcast-day':          '#544a3d',
+        'overcast-night':        '#2e353f',
+        'partly-cloudy-day':     '#2a4d6d',
+        'partly-cloudy-night':   '#1e304d',
+        'partly-cloudy-sunrise': '#604536',
+        'partly-cloudy-sunset':  '#5b2c42',
+        'rain-day':              '#38424d',
+        'rain-night':            '#2a2f39',
+        'snow-day':              '#424c5b',
+        'snow-night':            '#2d333e',
+    };
+
     const BG_FILES = new Set([
         'clear-day', 'clear-sunrise', 'clear-sunset', 'clear-night',
         'partly-cloudy-day', 'partly-cloudy-sunrise', 'partly-cloudy-sunset', 'partly-cloudy-night',
@@ -264,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : (bucket === 'night' ? GRAD.night : (GRAD[category] || GRAD.overcast));
 
         root.setAttribute('data-bg-dark', isDark ? 'true' : 'false');
+        root.style.setProperty('--card', (name && CARD_COLORS[name]) || '#294969');
         if (value === currentBgValue) return; // no needless re-fade
         currentBgValue = value;
 
@@ -426,12 +446,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const precip = hourly.precipitation_probability && hourly.precipitation_probability[i] != null
                 ? hourly.precipitation_probability[i] : 0;
             html += `
-                <div class="hour-card">
+                <div class="hour-card glass">
                     <div class="t-label">${label}</div>
                     <div class="hour-icon">${icon}</div>
                     <div class="t-value" style="font-weight: 500;">${Math.round(hourly.temperature_2m[i])}°</div>
                     <div style="display: flex; align-items: center; gap: 3px;">
-                        <svg width="8" height="10" viewBox="0 0 8 10" style="filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));"><path d="M4 0L8 6H0Z" fill="var(--accent)"></path></svg>
+                        <svg width="8" height="10" viewBox="0 0 8 10" style="filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));"><path d="M4 0.6C4 0.6 7.4 4.7 7.4 6.6A3.4 3.4 0 0 1 0.6 6.6C0.6 4.7 4 0.6 4 0.6Z" fill="var(--accent)"></path></svg>
                         <span class="t-cap-accent">${precip}%</span>
                     </div>
                     <div class="t-cap">${Math.round(hourly.wind_speed_10m[i])} ${t().kmh}</div>
