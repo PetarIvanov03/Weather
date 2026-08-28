@@ -23,7 +23,7 @@
     <div id="bg-scrim" aria-hidden="true"></div>
 
     <main>
-        <!-- Header: city search + language toggle -->
+        <!-- Header: city search + locate button -->
         <div class="app-header animate-fade-in">
             <div class="search-wrap">
                 <div class="search-pill glass">
@@ -103,10 +103,10 @@
 
                         <!-- Hourly rail -->
                         <div class="rail-outer" id="hourly-rail-outer">
-                            <div><span class="t-cap-heading" data-i18n="hourly">Hourly forecast</span></div>
+                            <div><span class="t-cap-heading">Hourly forecast</span></div>
                             <div class="rail-viewport">
-                                <span class="rail-chevron" style="left: 0;">‹</span>
-                                <span class="rail-chevron" style="right: 0;">›</span>
+                                <span class="rail-chevron" style="left: 0;" aria-hidden="true">‹</span>
+                                <span class="rail-chevron" style="right: 0;" aria-hidden="true">›</span>
                                 <div class="rail" id="hourly-rail"></div>
                             </div>
                         </div>
@@ -114,7 +114,7 @@
                         <!-- Secondary cards -->
                         <div class="secondary">
                             <div class="glass info-card">
-                                <div class="t-cap-heading" data-i18n="uvIndex">UV Index</div>
+                                <div class="t-cap-heading">UV Index</div>
                                 <div class="info-value-row"><span class="t-value" id="weather-uv">--</span></div>
                                 <div class="uv-bar-wrap">
                                     <span class="t-body" id="uv-label">&nbsp;</span>
@@ -122,7 +122,7 @@
                                 </div>
                             </div>
                             <div class="glass info-card">
-                                <div class="t-cap-heading" data-i18n="wind">Wind</div>
+                                <div class="t-cap-heading">Wind</div>
                                 <div class="info-value-row">
                                     <span class="t-value" id="weather-wind">--</span>
                                     <svg id="wind-arrow" width="22" height="22" viewBox="0 0 30 30" style="transition: transform 0.5s;">
@@ -130,17 +130,17 @@
                                         <path d="M15 6L20 18H10Z" fill="#f7f5f0"></path>
                                     </svg>
                                 </div>
-                                <div class="t-body"><span data-i18n="kmh">km/h</span> · <span id="wind-dir">--</span></div>
+                                <div class="t-body"><span>km/h</span> · <span id="wind-dir">--</span></div>
                             </div>
                             <div class="glass info-card">
-                                <div class="t-cap-heading" data-i18n="humidity">Humidity</div>
+                                <div class="t-cap-heading">Humidity</div>
                                 <div class="info-value-row"><span class="t-value"><span id="weather-humidity">--</span>%</span></div>
-                                <div class="t-body"><span data-i18n="dewPoint">Dew point</span> <span id="dew-point">--</span>°</div>
+                                <div class="t-body"><span>Dew point</span> <span id="dew-point">--</span>°</div>
                             </div>
                             <div class="glass info-card">
-                                <div class="t-cap-heading" data-i18n="sunsun">Sunrise / Sunset</div>
+                                <div class="t-cap-heading">Sunrise / Sunset</div>
                                 <div class="info-value-row"><span class="t-value" id="sunrise">--</span></div>
-                                <div class="t-body"><span data-i18n="sets">Sets</span> <span id="sunset">--</span></div>
+                                <div class="t-body"><span>Sets</span> <span id="sunset">--</span></div>
                             </div>
                         </div>
 
@@ -150,7 +150,7 @@
                 <!-- Right column: 14-day forecast -->
                 <aside class="wx-right">
                     <div class="glass forecast-card">
-                        <div class="t-cap-heading forecast-heading" data-i18n="forecast14">14-Day Forecast</div>
+                        <div class="t-cap-heading forecast-heading">14-Day Forecast</div>
                         <div id="weather-forecast-list" class="forecast-scroll"></div>
                     </div>
                 </aside>

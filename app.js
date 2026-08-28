@@ -2,109 +2,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const root = document.documentElement;
 
     /* =====================================================================
-       i18n — English (default) + Bulgarian
+       UI strings
        ===================================================================== */
-    const I18N = {
-        en: {
-            searchPlaceholder: 'Search city…',
-            go: 'Go',
-            locate: 'Use my location',
-            hourly: 'Hourly forecast',
-            forecast14: '14-Day Forecast',
-            uvIndex: 'UV Index',
-            wind: 'Wind',
-            humidity: 'Humidity',
-            sunsun: 'Sunrise / Sunset',
-            dewPoint: 'Dew point',
-            feelsLike: 'Feels like',
-            sets: 'Sets',
-            kmh: 'km/h',
-            today: 'Today',
-            now: 'Now',
-            high: 'H',
-            low: 'L',
-            uvLevels: ['Low', 'Moderate', 'High', 'Very High', 'Extreme'],
-            loadingLocate: 'Locating you…',
-            loadingFetch: 'Fetching weather data…',
-            errTitle: 'Something went wrong',
-            errMsg: 'Could not load weather data. Check your connection and try again.',
-            errRetry: 'Try again',
-            searchErr: 'Could not search for that city. Check your connection and try again.',
-            emptyTitle: 'No location set',
-            emptyMsg: 'Search for a city above to see the weather.',
-            notFoundTitle: 'Location not found',
-            notFoundMsg: (q) => `No results for “${q}”. Try a different search.`,
-            noMatches: 'No matches found',
-        },
-        bg: {
-            searchPlaceholder: 'Търсене на град…',
-            go: 'Търси',
-            locate: 'Използвай моето местоположение',
-            hourly: 'Почасова прогноза',
-            forecast14: '14-дневна прогноза',
-            uvIndex: 'UV индекс',
-            wind: 'Вятър',
-            humidity: 'Влажност',
-            sunsun: 'Изгрев / Залез',
-            dewPoint: 'Точка на роса',
-            feelsLike: 'Усеща се като',
-            sets: 'Залязва',
-            kmh: 'км/ч',
-            today: 'Днес',
-            now: 'Сега',
-            high: 'В',
-            low: 'Н',
-            uvLevels: ['Нисък', 'Умерен', 'Висок', 'Много висок', 'Екстремен'],
-            loadingLocate: 'Определяне на местоположението…',
-            loadingFetch: 'Зареждане на данните за времето…',
-            errTitle: 'Възникна грешка',
-            errMsg: 'Данните за времето не можаха да се заредят. Проверете връзката и опитайте отново.',
-            errRetry: 'Опитайте отново',
-            searchErr: 'Търсенето на този град не бе успешно. Проверете връзката и опитайте отново.',
-            emptyTitle: 'Няма избрано местоположение',
-            emptyMsg: 'Потърсете град по-горе, за да видите времето.',
-            notFoundTitle: 'Локацията не е намерена',
-            notFoundMsg: (q) => `Няма резултати за „${q}“. Опитайте друго търсене.`,
-            noMatches: 'Няма съвпадения',
-        },
+    const TXT = {
+        searchPlaceholder: 'Search city…',
+        go: 'Go',
+        locate: 'Use my location',
+        hourly: 'Hourly forecast',
+        forecast14: '14-Day Forecast',
+        uvIndex: 'UV Index',
+        wind: 'Wind',
+        humidity: 'Humidity',
+        sunsun: 'Sunrise / Sunset',
+        dewPoint: 'Dew point',
+        feelsLike: 'Feels like',
+        sets: 'Sets',
+        kmh: 'km/h',
+        today: 'Today',
+        now: 'Now',
+        high: 'H',
+        low: 'L',
+        uvLevels: ['Low', 'Moderate', 'High', 'Very High', 'Extreme'],
+        loadingLocate: 'Locating you…',
+        loadingFetch: 'Fetching weather data…',
+        errTitle: 'Something went wrong',
+        errMsg: 'Could not load weather data. Check your connection and try again.',
+        errRetry: 'Try again',
+        searchErr: 'Could not search for that city. Check your connection and try again.',
+        emptyTitle: 'No location set',
+        emptyMsg: 'Search for a city above to see the weather.',
+        notFoundTitle: 'Location not found',
+        notFoundMsg: (q) => `No results for “${q}”. Try a different search.`,
+        noMatches: 'No matches found',
     };
 
-    // WMO weather_code → condition name, per language
+    // WMO weather_code -> condition name
     const CONDITIONS = {
-        en: {
-            0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
-            45: 'Fog', 48: 'Depositing Rime Fog',
-            51: 'Light Drizzle', 53: 'Moderate Drizzle', 55: 'Dense Drizzle',
-            56: 'Light Freezing Drizzle', 57: 'Dense Freezing Drizzle',
-            61: 'Slight Rain', 63: 'Moderate Rain', 65: 'Heavy Rain',
-            66: 'Light Freezing Rain', 67: 'Heavy Freezing Rain',
-            71: 'Slight Snow Fall', 73: 'Moderate Snow Fall', 75: 'Heavy Snow Fall', 77: 'Snow Grains',
-            80: 'Slight Rain Showers', 81: 'Moderate Rain Showers', 82: 'Violent Rain Showers',
-            85: 'Slight Snow Showers', 86: 'Heavy Snow Showers',
-            95: 'Thunderstorm', 96: 'Thunderstorm with Slight Hail', 99: 'Thunderstorm with Heavy Hail',
-        },
-        bg: {
-            0: 'Ясно', 1: 'Предимно ясно', 2: 'Променлива облачност', 3: 'Облачно',
-            45: 'Мъгла', 48: 'Мъгла с иней',
-            51: 'Слаб ръмеж', 53: 'Умерен ръмеж', 55: 'Силен ръмеж',
-            56: 'Слаб леден ръмеж', 57: 'Силен леден ръмеж',
-            61: 'Слаб дъжд', 63: 'Умерен дъжд', 65: 'Силен дъжд',
-            66: 'Слаб леден дъжд', 67: 'Силен леден дъжд',
-            71: 'Слаб снеговалеж', 73: 'Умерен снеговалеж', 75: 'Силен снеговалеж', 77: 'Снежни зърна',
-            80: 'Слаби дъждовни превалявания', 81: 'Умерени дъждовни превалявания', 82: 'Силни дъждовни превалявания',
-            85: 'Слаби снежни превалявания', 86: 'Силни снежни превалявания',
-            95: 'Гръмотевична буря', 96: 'Гръмотевична буря със слаб град', 99: 'Гръмотевична буря със силен град',
-        },
+        0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+        45: 'Fog', 48: 'Depositing Rime Fog',
+        51: 'Light Drizzle', 53: 'Moderate Drizzle', 55: 'Dense Drizzle',
+        56: 'Light Freezing Drizzle', 57: 'Dense Freezing Drizzle',
+        61: 'Slight Rain', 63: 'Moderate Rain', 65: 'Heavy Rain',
+        66: 'Light Freezing Rain', 67: 'Heavy Freezing Rain',
+        71: 'Slight Snow Fall', 73: 'Moderate Snow Fall', 75: 'Heavy Snow Fall', 77: 'Snow Grains',
+        80: 'Slight Rain Showers', 81: 'Moderate Rain Showers', 82: 'Violent Rain Showers',
+        85: 'Slight Snow Showers', 86: 'Heavy Snow Showers',
+        95: 'Thunderstorm', 96: 'Thunderstorm with Slight Hail', 99: 'Thunderstorm with Heavy Hail',
     };
-
-    // Effective language: a manual toggle (persisted) overrides the auto choice
-    // derived from the searched location's country.
-    let manualLang = localStorage.getItem('weatherLang');
-    if (manualLang !== 'en' && manualLang !== 'bg') manualLang = null;
-    let autoLang = 'en';
-    const lang = () => manualLang || autoLang;
-    const t = () => I18N[lang()];
-    const locale = () => (lang() === 'bg' ? 'bg-BG' : 'en-US');
 
     /* =====================================================================
        WMO code groups
@@ -114,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const THUNDER_CODES = [95, 96, 99];
     const FOG_CODES = [45, 48];
 
-    const getWeatherCondition = (code) => CONDITIONS[lang()][code] || CONDITIONS.en[code] || '—';
+    const getWeatherCondition = (code) => CONDITIONS[code] || '—';
 
     /* =====================================================================
        Weather icon set (day/night aware) — light glyphs on photo, with a
@@ -305,7 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
        Formatting helpers (24-hour everywhere; API times already local)
        ===================================================================== */
     const getUvLevel = (uv) => uv < 3 ? 0 : uv < 6 ? 1 : uv < 8 ? 2 : uv < 11 ? 3 : 4;
-    const getUvLabel = (uv) => t().uvLevels[getUvLevel(uv)];
+    const getUvLabel = (uv) => TXT.uvLevels[getUvLevel(uv)];
+    // Round to the nearest integer, but never report a non-zero UV as "0"
+    const formatUv = (uv) => (uv > 0 && Math.round(uv) === 0) ? '<1' : String(Math.round(uv));
     const getCompass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
 
     const formatHour = (iso) => iso.slice(11, 13) + ':00';        // "15:00"
@@ -322,10 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getDayName = (dateStr, index) => {
-        if (index === 0) return t().today;
+        if (index === 0) return TXT.today;
         // Noon avoids any date rollover when the locale formats the weekday
         const d = new Date(dateStr + 'T12:00:00');
-        return new Intl.DateTimeFormat(locale(), { weekday: 'short' }).format(d);
+        return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(d);
     };
 
     /* =====================================================================
@@ -333,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
        ===================================================================== */
     const searchInput = document.getElementById('weather-search-input');
     const searchBtn = document.getElementById('weather-search-btn');
-    // const langToggle = document.getElementById('lang-toggle'); // swapped for #locate-btn — logic kept below, commented out
     const locateBtn = document.getElementById('locate-btn');
     const weatherCard = document.getElementById('weather-card');
 
@@ -368,9 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const railOuter = document.getElementById('hourly-rail-outer');
     const rail = document.getElementById('hourly-rail');
 
-    let lastRender = null;   // { data, meta } — for language re-render
+    let lastRender = null;   // { data, meta } — last successful payload
     let lastAction = null;   // re-run by the error screen's "Try again"
     let fetchAbortController = null;
+    let lastFetchTime = 0;      // Date.now() of the last successful weather fetch
+    let lastCoords = null;      // { lat, lon, meta } — target of a background refresh
+    let refreshInFlight = false;
+    let clockTimer = null;
 
     /* =====================================================================
        Hourly rail sizing — keep whole cards per slide (4 on mobile)
@@ -401,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
        State screens
        ===================================================================== */
     let currentState = 'none';
-    let currentEmpty = null;   // { title, message } to survive language switch
 
     const showState = (name, message, title) => {
         currentState = name;
@@ -420,31 +368,36 @@ document.addEventListener('DOMContentLoaded', () => {
         panel.classList.remove('hidden');
         panel.style.display = 'flex';
 
-        if (name === 'loading') loadingMessage.textContent = message || t().loadingFetch;
+        if (name === 'loading') loadingMessage.textContent = message || TXT.loadingFetch;
         if (name === 'error') {
-            errorTitleEl.textContent = t().errTitle;
-            errorMessage.textContent = message || t().errMsg;
+            errorTitleEl.textContent = TXT.errTitle;
+            errorMessage.textContent = message || TXT.errMsg;
         }
         if (name === 'empty') {
-            currentEmpty = { title: title || t().emptyTitle, message: message || t().emptyMsg };
-            emptyTitle.textContent = currentEmpty.title;
-            emptyMessage.textContent = currentEmpty.message;
+            emptyTitle.textContent = title || TXT.emptyTitle;
+            emptyMessage.textContent = message || TXT.emptyMsg;
         }
     };
 
     /* =====================================================================
        Rendering
        ===================================================================== */
+    // Index into an hourly `time` array for the current hour: the last entry
+    // at or before `currentTime`, clamped to a valid index.
+    const currentHourIndex = (times, currentTime) => {
+        let i = times.findIndex((x) => x > currentTime);
+        if (i === -1) i = times.length;
+        return Math.max(0, Math.min(i - 1, times.length - 1));
+    };
+
     const renderHourly = (hourly, currentTime) => {
         const times = hourly.time;
-        let start = times.findIndex((x) => x > currentTime);
-        if (start === -1) start = times.length;
-        start = Math.max(0, start - 1);
+        const start = currentHourIndex(times, currentTime);
         const end = Math.min(start + 24, times.length);
 
         let html = '';
         for (let i = start; i < end; i++) {
-            const label = i === start ? t().now : formatHour(times[i]);
+            const label = i === start ? TXT.now : formatHour(times[i]);
             const icon = getIcon(hourly.weather_code[i], hourly.is_day[i] === 1, 34);
             const precip = hourly.precipitation_probability && hourly.precipitation_probability[i] != null
                 ? hourly.precipitation_probability[i] : 0;
@@ -457,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <svg width="8" height="10" viewBox="0 0 8 10" style="filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));"><path d="M4 0.6C4 0.6 7.4 4.7 7.4 6.6A3.4 3.4 0 0 1 0.6 6.6C0.6 4.7 4 0.6 4 0.6Z" fill="var(--accent)"></path></svg>
                         <span class="t-cap-accent">${precip}%</span>
                     </div>
-                    <div class="t-cap">${Math.round(hourly.wind_speed_10m[i])} ${t().kmh}</div>
+                    <div class="t-cap">${Math.round(hourly.wind_speed_10m[i])} ${TXT.kmh}</div>
                     <div class="t-cap-emph">UV ${Math.round(hourly.uv_index[i])}</div>
                 </div>
             `;
@@ -545,13 +498,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uiTemp.textContent = Math.round(current.temperature_2m);
         uiCondition.textContent = getWeatherCondition(current.weather_code);
-        uiHiLo.textContent = `${t().high}:${Math.round(daily.temperature_2m_max[0])}° ${t().low}:${Math.round(daily.temperature_2m_min[0])}°`;
-        uiFeels.textContent = `${t().feelsLike} ${Math.round(current.apparent_temperature)}°`;
+        uiHiLo.textContent = `${TXT.high}:${Math.round(daily.temperature_2m_max[0])}° ${TXT.low}:${Math.round(daily.temperature_2m_min[0])}°`;
+        uiFeels.textContent = `${TXT.feelsLike} ${Math.round(current.apparent_temperature)}°`;
 
-        const uvToday = daily.uv_index_max && daily.uv_index_max.length ? daily.uv_index_max[0] : null;
-        uiUv.textContent = uvToday != null ? Math.round(uvToday) : '--';
-        uiUvLabel.textContent = uvToday != null ? getUvLabel(uvToday) : '';
-        const uvPct = uvToday != null ? Math.min(100, uvToday / 11 * 100) : 0;
+        // UV reads the current hour; the day's peak stays on the label line
+        const hourly = data.hourly;
+        const hourIdx = currentHourIndex(hourly.time, current.time);
+        const uvMax = daily.uv_index_max && daily.uv_index_max[0] != null ? daily.uv_index_max[0] : null;
+        const uvHour = hourly.uv_index && hourly.uv_index[hourIdx] != null ? hourly.uv_index[hourIdx] : null;
+        const uvNow = uvHour != null ? uvHour : uvMax;
+
+        uiUv.textContent = uvNow != null ? formatUv(uvNow) : '--';
+        uiUvLabel.textContent = uvNow == null ? ''
+            : uvMax != null ? `${getUvLabel(uvNow)} · Max ${Math.round(uvMax)}`
+            : getUvLabel(uvNow);
+        const uvPct = uvNow != null ? Math.min(100, uvNow / 11 * 100) : 0;
         uiUvBar.style.width = `${uvPct}%`;
         uiUvBar.style.backgroundSize = uvPct > 0 ? `${100 / (uvPct / 100)}% 100%` : '100% 100%';
 
@@ -565,50 +526,12 @@ document.addEventListener('DOMContentLoaded', () => {
         uiSunrise.textContent = formatClock(daily.sunrise[0]);
         uiSunset.textContent = formatClock(daily.sunset[0]);
 
-        renderHourly(data.hourly, current.time);
+        renderHourly(hourly, current.time);
         renderDaily(daily);
 
         showState('none');
         updateRailWidth();
     };
-
-    /* =====================================================================
-       Static-text i18n (labels not driven by weather data)
-       ===================================================================== */
-    const applyStaticI18n = () => {
-        const dict = t();
-        document.querySelectorAll('[data-i18n]').forEach((el) => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) el.textContent = dict[key];
-        });
-        searchInput.setAttribute('placeholder', dict.searchPlaceholder);
-        searchBtn.setAttribute('aria-label', dict.go);
-        errorRetry.textContent = dict.errRetry;
-        locateBtn.setAttribute('aria-label', dict.locate);
-        // langToggle.textContent = (lang() === 'en' ? 'bg' : 'en').toUpperCase();
-    };
-
-    const applyLanguage = () => {
-        applyStaticI18n();
-        if (lastRender) renderWeather(lastRender.data, lastRender.meta);
-        if (currentState === 'loading') loadingMessage.textContent = t().loadingFetch;
-        if (currentState === 'error') {
-            errorTitleEl.textContent = t().errTitle;
-            errorMessage.textContent = t().errMsg;
-        }
-        if (currentState === 'empty' && currentEmpty) {
-            // Re-derive the standard empty text in the new language (custom
-            // "not found" text is left as-is — it embeds a user query).
-            emptyTitle.textContent = t().emptyTitle;
-            emptyMessage.textContent = t().emptyMsg;
-        }
-    };
-
-    // langToggle.addEventListener('click', () => {
-    //     manualLang = lang() === 'en' ? 'bg' : 'en';
-    //     localStorage.setItem('weatherLang', manualLang);
-    //     applyLanguage();
-    // });
 
     /* =====================================================================
        Last-location persistence (localStorage — static site, no cookies)
@@ -632,35 +555,90 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* =====================================================================
+       Header clock — ticks between fetches so the time is never frozen
+       ===================================================================== */
+    const tickClock = () => {
+        if (!lastRender || currentState !== 'none') return;
+        const offset = lastRender.data.utc_offset_seconds || 0;
+        // Shifting UTC by the location's offset gives its local wall clock
+        const localIso = new Date(Date.now() + offset * 1000).toISOString();
+        uiLocalTime.textContent = formatLocalTime(localIso, offset);
+    };
+
+    const stopClock = () => {
+        if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+    };
+
+    const startClock = () => {
+        stopClock();
+        if (document.visibilityState === 'hidden') return;
+        clockTimer = setInterval(tickClock, 60000);
+    };
+
+    /* =====================================================================
        Weather fetch
        ===================================================================== */
+    const REFRESH_AFTER_MS = 10 * 60 * 1000;
+
+    const forecastUrl = (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
+        + `?latitude=${lat}&longitude=${lon}`
+        + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
+        + '&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m,uv_index,is_day'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max'
+        + '&forecast_days=14&timezone=auto';
+
     const fetchWeatherData = async (lat, lon, meta) => {
         lastAction = () => fetchWeatherData(lat, lon, meta);
-        showState('loading', t().loadingFetch);
+        showState('loading', TXT.loadingFetch);
 
         if (fetchAbortController) fetchAbortController.abort();
         fetchAbortController = new AbortController();
 
         try {
-            const url = 'https://api.open-meteo.com/v1/forecast'
-                + `?latitude=${lat}&longitude=${lon}`
-                + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
-                + '&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m,uv_index,is_day'
-                + '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max'
-                + '&forecast_days=14&timezone=auto';
-            const response = await fetch(url, { signal: fetchAbortController.signal });
+            const response = await fetch(forecastUrl(lat, lon), { signal: fetchAbortController.signal });
             if (!response.ok) throw new Error('Failed to fetch weather data.');
             const data = await response.json();
 
             saveLastLocation(lat, lon, meta);
             lastRender = { data, meta };
+            lastFetchTime = Date.now();
+            lastCoords = { lat, lon, meta };
             renderWeather(data, meta);
+            startClock();
         } catch (err) {
             if (err.name === 'AbortError') return;
             console.error(err);
-            showState('error', t().errMsg);
+            showState('error', TXT.errMsg);
         }
     };
+
+    // Background refresh when the tab is re-opened: no loading screen, no
+    // blanking. On failure whatever is already on screen is left alone.
+    const refreshSilently = async () => {
+        if (refreshInFlight || !lastCoords || currentState !== 'none') return;
+        const target = lastCoords;
+        refreshInFlight = true;
+        try {
+            const response = await fetch(forecastUrl(target.lat, target.lon));
+            if (!response.ok) throw new Error('Failed to refresh weather data.');
+            const data = await response.json();
+            if (lastCoords !== target) return;   // a newer location won the race
+            lastRender = { data, meta: target.meta };
+            lastFetchTime = Date.now();
+            renderWeather(data, target.meta);
+        } catch (err) {
+            console.error('Background weather refresh failed:', err);
+        } finally {
+            refreshInFlight = false;
+        }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') { stopClock(); return; }
+        tickClock();
+        startClock();
+        if (Date.now() - lastFetchTime > REFRESH_AFTER_MS) refreshSilently();
+    });
 
     /* =====================================================================
        Search + autocomplete
@@ -683,17 +661,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.results || [];
     };
 
+    // Point the combobox at the highlighted option, or at nothing
+    const syncActiveDescendant = () => {
+        if (highlightIndex >= 0 && highlightIndex < dropdownResults.length) {
+            searchInput.setAttribute('aria-activedescendant', `search-option-${highlightIndex}`);
+        } else {
+            searchInput.removeAttribute('aria-activedescendant');
+        }
+    };
+
     const closeDropdown = () => {
         dropdown.classList.add('hidden');
         dropdown.innerHTML = '';
         dropdownResults = [];
         highlightIndex = -1;
         searchInput.setAttribute('aria-expanded', 'false');
+        syncActiveDescendant();
     };
 
     const renderDropdown = () => {
         if (dropdownResults.length === 0) {
-            dropdown.innerHTML = `<div class="search-option search-muted" style="cursor: default;">${t().noMatches}</div>`;
+            dropdown.innerHTML = `<div class="search-option search-muted" style="cursor: default;">${TXT.noMatches}</div>`;
         } else {
             dropdown.innerHTML = dropdownResults.map((r, i) => {
                 const region = [r.admin1, r.country].filter(Boolean).join(', ');
@@ -707,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dropdown.classList.remove('hidden');
         searchInput.setAttribute('aria-expanded', 'true');
+        syncActiveDescendant();
     };
 
     const moveHighlight = (delta) => {
@@ -717,17 +706,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const active = dropdown.querySelector(`#search-option-${highlightIndex}`);
         if (active) active.scrollIntoView({ block: 'nearest' });
+        syncActiveDescendant();
     };
 
     const selectResult = (result) => {
         closeDropdown();
         searchInput.value = result.name;
         searchInput.blur();
-        // Auto language follows the location unless the user has toggled manually
-        // if (!manualLang) {
-        //     autoLang = result.country_code === 'BG' ? 'bg' : 'en';
-        //     applyStaticI18n();
-        // }
         fetchWeatherData(result.latitude, result.longitude, {
             name: result.name,
             country: result.country || result.admin1 || '',
@@ -761,7 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const results = await fetchGeocode(query, suggestAbortController.signal);
             if (results.length === 0) {
                 closeDropdown();
-                showState('empty', t().notFoundMsg(query), t().notFoundTitle);
+                showState('empty', TXT.notFoundMsg(query), TXT.notFoundTitle);
                 return;
             }
             if (results.length === 1) {
@@ -776,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (err.name === 'AbortError') return;
             console.error(err);
             closeDropdown();
-            showState('error', t().searchErr);
+            showState('error', TXT.searchErr);
         }
     };
 
@@ -846,10 +831,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
                     const loc = await reverseGeocode(lat, lon);
-                    // if (!manualLang) {
-                    //     autoLang = loc.country_code === 'BG' ? 'bg' : 'en';
-                    //     applyStaticI18n();
-                    // }
                     fetchWeatherData(lat, lon, { name: loc.name, country: loc.country });
                 },
                 (error) => {
@@ -864,19 +845,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     locateBtn.addEventListener('click', () => {
-        showState('loading', t().loadingLocate);
+        showState('loading', TXT.loadingLocate);
         locateAndFetch();
     });
 
     // Initial paint
-    applyStaticI18n();
-
     const savedLocation = readLastLocation();
     if (savedLocation) {
-        showState('loading', t().loadingFetch);
+        showState('loading', TXT.loadingFetch);
         fetchWeatherData(savedLocation.lat, savedLocation.lon, { name: savedLocation.name, country: savedLocation.country });
     } else {
-        showState('loading', t().loadingLocate);
+        showState('loading', TXT.loadingLocate);
         locateAndFetch();
     }
 });
