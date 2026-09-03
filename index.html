@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather — Forecast & Conditions</title>
+    <meta name="description" content="A fast, clean weather app with current conditions, hourly and 14-day forecasts, and location search.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#294969">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Weather">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Weather — Forecast & Conditions">
+    <meta property="og:description" content="A fast, clean weather app with current conditions, hourly and 14-day forecasts, and location search.">
+    <meta property="og:url" content="https://ivanovp.online">
+    <meta property="og:image" content="https://ivanovp.online/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Weather — Forecast & Conditions">
+    <meta name="twitter:description" content="A fast, clean weather app with current conditions, hourly and 14-day forecasts, and location search.">
+    <meta name="twitter:image" content="https://ivanovp.online/assets/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+</head>
+<body>
+
+    <!-- Crossfading background (two stacked layers) -->
+    <div id="bg" aria-hidden="true">
+        <div class="bg-layer" id="bg-a"></div>
+        <div class="bg-layer" id="bg-b"></div>
+    </div>
+    <div id="bg-scrim" aria-hidden="true"></div>
+
+    <main>
+        <!-- Header: city search + locate button -->
+        <div class="app-header animate-fade-in">
+            <div class="search-wrap">
+                <div class="search-pill glass">
+                    <input type="text" id="weather-search-input" placeholder="Search city…" autocomplete="off"
+                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
+                    <button id="weather-search-btn" aria-label="Search">
+                        <svg class="wx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="search-dropdown" class="hidden" role="listbox" aria-label="City suggestions"></div>
+            </div>
+            <button id="locate-btn" class="icon-btn glass" aria-label="Use my location">
+                <svg class="wx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-7-7.58-7-12a7 7 0 1114 0c0 4.42-7 12-7 12z" />
+                    <circle cx="12" cy="9" r="2.5" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- State screens -->
+        <div id="state-screen" class="hidden animate-fade-in state-wrap" role="status" aria-live="polite">
+            <div class="glass state-card">
+                <div id="state-loading" class="hidden state-block state-block--loading">
+                    <div class="spinner"></div>
+                    <p id="loading-message" class="t-body loading-message">Loading…</p>
+                </div>
+                <div id="state-error" class="hidden state-block">
+                    <svg width="46" height="41" viewBox="0 0 34 30" opacity="0.9" aria-hidden="true">
+                        <circle cx="12" cy="16" r="8" fill="#e9edf3" opacity="0.95"></circle>
+                        <circle cx="20" cy="13" r="9" fill="#f4f6f9"></circle>
+                        <rect x="7" y="18" width="22" height="8" rx="4" fill="#eef1f5"></rect>
+                        <line x1="6" y1="4" x2="28" y2="27" stroke="#9fb3d1" stroke-width="2.5" stroke-linecap="round"></line>
+                    </svg>
+                    <p id="error-title" class="t-body-emph state-title">Something went wrong</p>
+                    <p id="error-message" class="t-body">Could not load weather data.</p>
+                    <button id="error-retry" class="glass state-retry-btn">Try again</button>
+                </div>
+                <div id="state-empty" class="hidden state-block">
+                    <svg class="wx-icon empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p id="empty-title" class="t-body-emph state-title">No location set</p>
+                    <p id="empty-message" class="t-body">Search for a city above to see the weather.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather -->
+        <div id="weather-card" class="hidden animate-fade-in">
+            <div class="wx-layout">
+
+                <!-- Left panel -->
+                <section class="wx-panel">
+                    <div class="panel-photo" aria-hidden="true">
+                        <div class="pp-layer" id="pp-a"></div>
+                        <div class="pp-layer" id="pp-b"></div>
+                    </div>
+                    <div class="panel-scrim" aria-hidden="true"></div>
+                    <div class="panel-inner">
+
+                        <!-- Hero -->
+                        <div class="hero">
+                            <div class="hero-temp t-display"><span id="weather-temp">--</span>°</div>
+                            <div class="hero-top">
+                                <span class="hero-city t-title" id="weather-city">--</span>
+                                <span class="hero-time t-body" id="weather-localtime"></span>
+                            </div>
+                            <div class="hero-bottom">
+                                <div class="t-condition" id="weather-condition">--</div>
+                                <div class="t-body" id="weather-hilo">H:--° L:--°</div>
+                                <div class="t-cap" id="weather-feels">Feels like --°</div>
+                            </div>
+                        </div>
+
+                        <!-- Hourly rail -->
+                        <div class="rail-outer" id="hourly-rail-outer">
+                            <div><span class="t-cap-heading">Hourly forecast</span></div>
+                            <div class="rail-viewport">
+                                <span class="rail-chevron" style="left: 0;" aria-hidden="true">‹</span>
+                                <span class="rail-chevron" style="right: 0;" aria-hidden="true">›</span>
+                                <div class="rail" id="hourly-rail"></div>
+                            </div>
+                        </div>
+
+                        <!-- Secondary cards -->
+                        <div class="secondary">
+                            <div class="glass info-card">
+                                <div class="t-cap-heading">UV Index</div>
+                                <div class="info-value-row"><span class="t-value" id="weather-uv">--</span></div>
+                                <div class="uv-bar-wrap">
+                                    <span class="t-body" id="uv-label">&nbsp;</span>
+                                    <div class="bar-track"><div id="uv-bar" style="width: 0%; height: 100%; border-radius: 3px;"></div></div>
+                                </div>
+                            </div>
+                            <div class="glass info-card">
+                                <div class="t-cap-heading">Wind</div>
+                                <div class="info-value-row">
+                                    <span class="t-value" id="weather-wind">--</span>
+                                    <svg id="wind-arrow" width="22" height="22" viewBox="0 0 30 30" style="transition: transform 0.5s;">
+                                        <circle cx="15" cy="15" r="13" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"></circle>
+                                        <path d="M15 6L20 18H10Z" fill="#f7f5f0"></path>
+                                    </svg>
+                                </div>
+                                <div class="t-body"><span>km/h</span> · <span id="wind-dir">--</span></div>
+                            </div>
+                            <div class="glass info-card">
+                                <div class="t-cap-heading">Humidity</div>
+                                <div class="info-value-row"><span class="t-value"><span id="weather-humidity">--</span>%</span></div>
+                                <div class="t-body"><span>Dew point</span> <span id="dew-point">--</span>°</div>
+                            </div>
+                            <div class="glass info-card">
+                                <div class="t-cap-heading">Sunrise / Sunset</div>
+                                <div class="info-value-row"><span class="t-value" id="sunrise">--</span></div>
+                                <div class="t-body"><span>Sets</span> <span id="sunset">--</span></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Right column: 14-day forecast -->
+                <aside class="wx-right">
+                    <div class="glass forecast-card">
+                        <div class="t-cap-heading forecast-heading">14-Day Forecast</div>
+                        <div id="weather-forecast-list" class="forecast-scroll"></div>
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js?v=8"></script>
+</body>
+</html>
