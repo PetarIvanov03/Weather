@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Weather — Forecast & Conditions</title>
     <meta name="description" content="A fast, clean weather app with current conditions, hourly and 14-day forecasts, and location search.">
     <link rel="manifest" href="manifest.json">
@@ -28,7 +28,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=17">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -179,6 +179,40 @@
         </div>
     </main>
 
-    <script src="app.js?v=8"></script>
+    <!-- Hour / day detail popup -->
+    <div id="detail-overlay" class="hidden" aria-hidden="true"></div>
+    <div id="detail-dialog" class="glass hidden" role="dialog" aria-modal="true" aria-labelledby="detail-title" tabindex="-1">
+        <div class="detail-grabber" id="detail-grabber" aria-hidden="true"></div>
+        <div class="detail-header" id="detail-header">
+            <button type="button" id="detail-back" class="detail-back hidden">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span></span>
+            </button>
+            <button type="button" id="detail-prev" class="detail-nav-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div class="detail-heading">
+                <div class="t-body-emph" id="detail-title">--</div>
+                <div class="t-cap" id="detail-subtitle">--</div>
+            </div>
+            <button type="button" id="detail-next" class="detail-nav-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <button type="button" id="detail-close" class="detail-close">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M6 6l12 12M18 6L6 18" />
+                </svg>
+            </button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+    </div>
+
+    <script src="app.js?v=17"></script>
 </body>
 </html>
