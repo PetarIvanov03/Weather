@@ -7,7 +7,7 @@ Single-page weather app. Search any city with autocomplete or use your current l
 ![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8)
 ![Pages](https://img.shields.io/badge/Deploy-GitHub_Pages-222222)
 
-**Live:** [ivanovp.online](https://ivanovp.online)
+**Live:** [ivanovp.site](https://ivanovp.site)
 
 ## Architecture
 
