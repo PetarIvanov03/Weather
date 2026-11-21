@@ -89,7 +89,7 @@ banners (find by title, line numbers drift). In order:
 | Background selection | `CARD_COLORS`, `BG_FILES`, `GRAD`, `bgCategory`, `timeBucket`, `pickBackground`, `applyBackground` |
 | Formatting helpers | UV/compass/time/day-name formatters (24h, API times already local) |
 | DOM references / state | `lastRender {data, meta, airQuality, ensemble}`, `lastCoords`, abort controllers |
-| Hourly rail sizing | `ResizeObserver` gap math (84/6 mobile, 90/10 desktop) |
+| Hourly rail controls | wheel→horizontal, chevron paging, scroll-position line, end fade (card widths are CSS) |
 | State screens | `showState('loading'|'error'|'empty'|'none')` |
 | Rendering | `renderHourly`, `renderDaily`, `renderWeather` |
 | Last-location persistence | `localStorage['weatherLastLocation']` (schema `v: 1`) |
