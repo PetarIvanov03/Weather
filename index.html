@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=31">
+    <link rel="stylesheet" href="styles.css?v=32">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -173,7 +173,10 @@
                 <!-- Right column: 14-day forecast -->
                 <aside class="wx-right">
                     <div class="glass forecast-card">
-                        <div class="t-cap-heading forecast-heading">14-Day Forecast</div>
+                        <div class="forecast-heading">
+                            <span class="t-cap-heading">14-Day Forecast</span>
+                            <button type="button" class="past-btn t-cap-emph" id="past-days-btn">Past 7 days</button>
+                        </div>
                         <div id="weather-forecast-list" class="forecast-scroll"></div>
                     </div>
                 </aside>
@@ -215,6 +218,6 @@
         <div class="detail-body" id="detail-body"></div>
     </div>
 
-    <script src="app.js?v=31"></script>
+    <script src="app.js?v=32"></script>
 </body>
 </html>

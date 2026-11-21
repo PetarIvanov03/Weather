@@ -56,6 +56,7 @@ Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript me
 - **14-day forecast** — day, icon, precipitation %, and low/high with a range bar scaled to the forecast's global min and max
 - **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed and the compass point it blows from), humidity with dew point, and sun (sunrise and sunset as two labelled rows, plus day length)
 - **Hour/day detail popups** — tap an hour or a day for a chart (temperature, precipitation, wind) plus tiles: precipitation, wind, humidity, UV, visibility, thunderstorm risk and snow when relevant, air quality, pollen, and (per day) a forecast-confidence rating — see [Detail popups](#detail-popups)
+- **Past 7 days** — a "Past 7 days" button in the 14-day header opens a popup listing the last seven days, yesterday on top: what the day looked like, the precipitation that actually fell (mm), the strongest wind, and a low/high bar scaled to that week. Loaded on demand with a small separate request, only when first opened for a location
 - **Search autocomplete** — debounced, up to 8 disambiguated matches (`name, region, country`) so same-named cities like Dimitrovgrad in Bulgaria and in Russia are both reachable; full keyboard support (↑/↓, Enter, Esc) with `aria-activedescendant` tracking the highlighted option
 - **Last location remembered** — the most recent result is saved to `localStorage` and restored on the next visit
 - **Geolocation** — on a first visit (no saved location) or via the locate button, with reverse geocoding for the place name, falling back to search if denied
@@ -99,6 +100,7 @@ All client-side, all free, no keys.
 | API | Used for |
 |---|---|
 | [Open-Meteo Forecast](https://open-meteo.com/en/docs) | `current`, `hourly` and `daily` conditions for the main screen and both detail popups — temperature, precipitation, wind, humidity, visibility, UV, CAPE/lifted index, sun times and day length — 14 days, `forecast_days=14&timezone=auto` |
+| [Open-Meteo Forecast](https://open-meteo.com/en/docs) (past days) | Daily weather code, high/low, precipitation sum and max wind for the last 7 days (`past_days=7&forecast_days=0`) — fetched lazily, only once the "Past 7 days" popup first opens for the current location |
 | [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) | European AQI and pollen — fetched alongside the main forecast, `forecast_days=5`; powers the popups' air-quality and pollen sections |
 | [Open-Meteo Ensemble](https://open-meteo.com/en/docs/ensemble-api) | `ecmwf_ifs025` (51-member) hourly temperature, used for the day popup's forecast-confidence tile — fetched lazily, only once a day popup first opens for the current location |
 | [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api) | City search and autocomplete |
