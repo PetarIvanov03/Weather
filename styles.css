@@ -82,7 +82,12 @@ body {
     -webkit-font-smoothing: antialiased;
     color: #fff;
     overscroll-behavior-y: none;
+    /* App-like: text can't be selected or copied (no long-press callout on iOS) */
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
 }
+/* ...except where the user types */
+input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* ---------- Background: crossfading photo layers ---------- */
 /* Mobile: full-bleed adaptive-brightness photo.
