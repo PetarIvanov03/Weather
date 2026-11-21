@@ -378,6 +378,14 @@ main {
 @media (min-width: 768px) { .info-card { padding: 12px 14px; justify-content: space-between; } }
 .info-value-row { display: flex; align-items: center; gap: 8px; min-height: 30px; }
 @media (min-width: 768px) { .info-value-row { min-height: 38px; } }
+/* Sun card: two equal rows (icon, label, time) plus the day length */
+.sun-row { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; column-gap: 6px; line-height: 1.25; }
+.sun-icon {
+    fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    color: #ffd97a; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+.sun-time { font-size: 19px; }
+.sun-daylight { opacity: 0.85; line-height: 1.25; margin-top: 2px; }
 .bar-track { width: 100%; height: 4px; border-radius: 3px; background: var(--track); overflow: hidden; }
 @media (min-width: 768px) { .bar-track { height: 5px; } }
 .uv-bar-wrap { display: flex; flex-direction: column; gap: 5px; }

@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=24">
+    <link rel="stylesheet" href="styles.css?v=25">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -158,9 +158,16 @@
                                 <div class="t-body"><span>Dew point</span> <span id="dew-point">--</span>°</div>
                             </div>
                             <div class="glass info-card">
-                                <div class="t-cap-heading">Sunrise / Sunset</div>
-                                <div class="info-value-row"><span class="t-value" id="sunrise">--</span></div>
-                                <div class="t-body"><span>Sets</span> <span id="sunset">--</span></div>
+                                <div class="t-cap-heading">Sun</div>
+                                <div class="sun-row">
+                                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20h20M7.5 20A5 5 0 1 1 16.5 20M12 11V8.5M7.4 13.2L5.6 11.4M16.6 13.2l1.8-1.8M5.5 17.8H3M18.5 17.8H21"/></svg>
+                                    <span class="t-cap">Sunrise</span><span class="t-body-emph sun-time" id="sunrise">--</span>
+                                </div>
+                                <div class="sun-row">
+                                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20h20M7.4 20A5 5 0 0 1 16.6 20M12 15.7v-1M7.6 17.6l-.7-.7M16.4 17.6l.7-.7"/></svg>
+                                    <span class="t-cap">Sunset</span><span class="t-body-emph sun-time" id="sunset">--</span>
+                                </div>
+                                <div class="t-cap sun-daylight"><span>Daylight</span> <span id="daylight">--</span></div>
                             </div>
                         </div>
 
@@ -213,6 +220,6 @@
         <div class="detail-body" id="detail-body"></div>
     </div>
 
-    <script src="app.js?v=24"></script>
+    <script src="app.js?v=25"></script>
 </body>
 </html>
