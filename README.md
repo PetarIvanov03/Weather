@@ -46,8 +46,8 @@ The Pages CDN caches `app.js` and `styles.css` for about ten minutes while `inde
 <script src="app.js?v=2"></script>
 ```
 
-**5. Exact-multiple rail width via `ResizeObserver`**
-The hourly rail uses CSS scroll snap, which only lands cleanly if the container is an exact multiple of the card unit (84+6px mobile, 90+10px desktop). A `ResizeObserver` recomputes the width on every resize so each swipe ends on a whole number of cards instead of a sliced one. Vertical wheel input is translated to horizontal scroll on desktop.
+**5. Rail card width in CSS, with a half-card hint**
+Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript measures anything: phones narrower than 380px show exactly 4 cards, larger phones show 4½ with the half card fading out on the right, and desktop uses fixed 90px cards; either edge fades while there are more cards beyond it. The peeking card tells you the rail scrolls; CSS scroll snap still ends every swipe on a card's start. The chevrons step by the fully visible cards, and vertical wheel input is translated to horizontal scroll on desktop.
 
 ## Features
 

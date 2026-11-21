@@ -319,7 +319,7 @@ main {
 }
 @media (min-width: 768px) { .rail-progress { left: 20px; right: 20px; bottom: 5px; } }
 .rail {
-    display: flex; gap: 8px; width: 100%; overflow-x: auto;
+    display: flex; gap: 6px; width: 100%; overflow-x: auto;
     scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
     padding: 4px 0 12px;   /* bottom room for .rail-progress */
@@ -327,8 +327,27 @@ main {
 @media (min-width: 768px) { .rail { gap: 10px; padding: 6px 0 16px; align-items: flex-start; } }
 .rail::-webkit-scrollbar { display: none; }
 .rail { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Cards per screen. Small phones (< 380px): exactly 4. Larger phones: 4½, the
+   half card fading out on the right hints there's more. Desktop: fixed 90px,
+   with the same fade. Width % is of the rail, so no JS sizing is needed. */
+.hour-card { width: calc((100% - 3 * 6px) / 4); }
+@media (min-width: 380px) { .hour-card { width: calc((100% - 4 * 6px) / 4.5); } }
+/* Edge fades: an edge fades only while there are more cards beyond it */
+@media (min-width: 380px) {
+    .rail {
+        --fade-left: 40px; --fade-right: 40px;
+        /* Edges keep 30% opacity: a full fade showed the photo through (white cloud
+           on one side, dark sky on the other) */
+        -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.3), #000 var(--fade-left), #000 calc(100% - var(--fade-right)), rgba(0,0,0,0.3));
+        mask-image: linear-gradient(to right, rgba(0,0,0,0.3), #000 var(--fade-left), #000 calc(100% - var(--fade-right)), rgba(0,0,0,0.3));
+    }
+    .rail.is-start { --fade-left: 0px; }
+    .rail.is-end { --fade-right: 0px; }
+}
+
 .hour-card {
-    flex: 0 0 auto; width: 84px; min-height: 160px; scroll-snap-align: start;
+    flex: 0 0 auto; min-height: 160px; scroll-snap-align: start;
     display: grid; grid-template-rows: 21px 38px 30px 20px 20px 19px; row-gap: 3px;
     justify-items: center; align-items: center; padding: 9px 6px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.30);

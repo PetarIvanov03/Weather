@@ -504,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const uiSunrise = document.getElementById('sunrise');
     const uiSunset = document.getElementById('sunset');
     const uiForecastList = document.getElementById('weather-forecast-list');
-    const railOuter = document.getElementById('hourly-rail-outer');
     const rail = document.getElementById('hourly-rail');
 
     let lastRender = null;   // { data, meta } — last successful payload
@@ -518,22 +517,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let ensembleLoading = false;
 
     /* =====================================================================
-       Hourly rail sizing — keep whole cards per slide (4 on mobile)
+       Hourly rail controls — card widths live in CSS (4 or 4½ per screen)
        ===================================================================== */
-    const railMetrics = () => {
-        const desktop = window.matchMedia('(min-width: 768px)').matches;
-        return { card: desktop ? 90 : 84, minGap: desktop ? 10 : 6 };
-    };
-    const updateRailWidth = () => {
-        const { card, minGap } = railMetrics();
-        const w = railOuter.clientWidth;
-        if (!w) return;
-        const count = Math.max(1, Math.floor((w + minGap) / (card + minGap)));
-        const gap = count > 1 ? Math.max(minGap, (w - count * card) / (count - 1)) : minGap;
-        rail.style.gap = gap + 'px';
-    };
-    new ResizeObserver(updateRailWidth).observe(railOuter);
-
     // Desktop: vertical wheel scrolls the rail horizontally
     rail.addEventListener('wheel', (e) => {
         if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
@@ -550,8 +535,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateRailControls = () => {
         const max = rail.scrollWidth - rail.clientWidth;
-        railBack.disabled = rail.scrollLeft <= 1;
-        railForward.disabled = rail.scrollLeft >= max - 1;
+        const atStart = rail.scrollLeft <= 1;
+        const atEnd = rail.scrollLeft >= max - 1;
+        railBack.disabled = atStart;
+        railForward.disabled = atEnd;
+        rail.classList.toggle('is-start', atStart);   // no left fade
+        rail.classList.toggle('is-end', atEnd);       // no right fade
 
         const visiblePct = rail.scrollWidth ? rail.clientWidth / rail.scrollWidth * 100 : 100;
         const progress = max > 0 ? rail.scrollLeft / max : 0;
@@ -559,8 +548,13 @@ document.addEventListener('DOMContentLoaded', () => {
         railThumb.style.left = `${progress * (100 - visiblePct)}%`;
     };
 
+    // Step by the cards that are fully visible, so a half-peeking card isn't skipped
     const scrollRailBy = (direction) => {
-        rail.scrollBy({ left: direction * rail.clientWidth, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+        const card = rail.firstElementChild;
+        if (!card) return;
+        const step = card.offsetWidth + parseFloat(getComputedStyle(rail).columnGap);
+        const fullCards = Math.max(1, Math.floor((rail.clientWidth + 1) / step));
+        rail.scrollBy({ left: direction * fullCards * step, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     };
     railBack.addEventListener('click', () => scrollRailBy(-1));
     railForward.addEventListener('click', () => scrollRailBy(1));
@@ -642,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rail.innerHTML = html;
         rail.scrollLeft = 0;
         updateRailControls();
-        updateRailWidth();
     };
 
     const renderDaily = (daily) => {
@@ -756,7 +749,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDaily(daily);
 
         showState('none');
-        updateRailWidth();
     };
 
     /* =====================================================================
