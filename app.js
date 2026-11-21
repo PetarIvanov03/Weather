@@ -118,6 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 range: (p10, p90) => `Most forecasts: ${p10}–${p90}° (a wider range means less certainty)`,
             },
         },
+        past: {
+            title: 'Past 7 days',
+            yesterday: 'Yesterday',
+            loading: 'Loading the past week…',
+            error: 'Could not load the past days. Close and try again.',
+            rowLabel: (day, cond, hi, lo, mm, wind) => `${day}, ${cond}, high ${hi}°, low ${lo}°, ${mm} mm, wind up to ${wind} ${TXT.kmh}`,
+        },
         chartSeries: {
             temp: 'Temp',
             feelsLike: 'Feels like',
@@ -547,6 +554,35 @@ document.addEventListener('DOMContentLoaded', () => {
         updateRailControls();
     };
 
+    // Temperature color scale: cool ≤14°C → yellow 21°C → warm ≥33°C
+    const tempColor = (temp) => {
+        const stops = [
+            [14, [ 64, 196, 209]],  // cool blue-green
+            [21, [255, 210,  63]],  // yellow
+            [33, [255,  94,  58]],  // warm red-orange
+        ];
+        const lerp = (a, b, f) => Math.round(a + (b - a) * f);
+        const t = Math.max(stops[0][0], Math.min(stops[stops.length - 1][0], temp));
+        for (let i = 0; i < stops.length - 1; i++) {
+            const [t0, c0] = stops[i], [t1, c1] = stops[i + 1];
+            if (t <= t1) {
+                const f = (t - t0) / (t1 - t0);
+                return `rgb(${lerp(c0[0], c1[0], f)}, ${lerp(c0[1], c1[1], f)}, ${lerp(c0[2], c1[2], f)})`;
+            }
+        }
+        const last = stops[stops.length - 1][1];
+        return `rgb(${last[0]}, ${last[1]}, ${last[2]})`;
+    };
+
+    // Low-high bar on a track spanning the whole list's range (rangeLo .. rangeLo + span)
+    const tempRangeBarHtml = (lo, hi, rangeLo, span) => {
+        const left = ((lo - rangeLo) / span * 100).toFixed(0);
+        const width = ((hi - lo) / span * 100).toFixed(0);
+        return `<div class="temp-track">
+            <div class="temp-fill" style="left: ${left}%; width: ${width}%; background: linear-gradient(90deg, ${tempColor(lo)}, ${tempColor(hi)});"></div>
+        </div>`;
+    };
+
     const renderDaily = (daily) => {
         uiForecastList.innerHTML = '';
         const days = Math.min(14, daily.time.length);
@@ -558,26 +594,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const span = Math.max(1, weekHi - weekLo);
 
-        // Apple-Weather-style temperature color scale: cool ≤14°C → yellow 21°C → warm ≥33°C
-        const tempColor = (temp) => {
-            const stops = [
-                [14, [ 64, 196, 209]],  // cool blue-green
-                [21, [255, 210,  63]],  // yellow
-                [33, [255,  94,  58]],  // warm red-orange
-            ];
-            const lerp = (a, b, f) => Math.round(a + (b - a) * f);
-            const t = Math.max(stops[0][0], Math.min(stops[stops.length - 1][0], temp));
-            for (let i = 0; i < stops.length - 1; i++) {
-                const [t0, c0] = stops[i], [t1, c1] = stops[i + 1];
-                if (t <= t1) {
-                    const f = (t - t0) / (t1 - t0);
-                    return `rgb(${lerp(c0[0], c1[0], f)}, ${lerp(c0[1], c1[1], f)}, ${lerp(c0[2], c1[2], f)})`;
-                }
-            }
-            const last = stops[stops.length - 1][1];
-            return `rgb(${last[0]}, ${last[1]}, ${last[2]})`;
-        };
-
         let html = '';
         for (let i = 0; i < days; i++) {
             const dayName = getDayName(daily.time[i], i);
@@ -586,8 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? daily.precipitation_probability_max[i] : 0;
             const minTemp = Math.round(daily.temperature_2m_min[i]);
             const maxTemp = Math.round(daily.temperature_2m_max[i]);
-            const left = ((daily.temperature_2m_min[i] - weekLo) / span * 100).toFixed(0);
-            const width = ((daily.temperature_2m_max[i] - daily.temperature_2m_min[i]) / span * 100).toFixed(0);
             const ariaLabel = TXT.dayRowLabel(dayName, getWeatherCondition(daily.weather_code[i]), maxTemp, minTemp);
 
             html += `
@@ -597,9 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="t-cap-accent" style="line-height: 1;">${precip}%</div>
                     <div class="day-bar-wrap">
                         <span class="t-body" style="width: 32px; flex-shrink: 0; line-height: 1;">${minTemp}°</span>
-                        <div class="temp-track">
-                            <div class="temp-fill" style="left: ${left}%; width: ${width}%; background: linear-gradient(90deg, ${tempColor(daily.temperature_2m_min[i])}, ${tempColor(daily.temperature_2m_max[i])});"></div>
-                        </div>
+                        ${tempRangeBarHtml(daily.temperature_2m_min[i], daily.temperature_2m_max[i], weekLo, span)}
                     </div>
                     <span class="t-body-emph day-hi" style="line-height: 1;">${maxTemp}°</span>
                 </div>
@@ -745,10 +757,10 @@ document.addEventListener('DOMContentLoaded', () => {
         + `&hourly=temperature_2m&models=${ENSEMBLE_MODEL_ID}`
         + '&forecast_days=14&timezone=auto';
 
-    // Heavy (51 members × 14 days) and only useful once a popup is open, so
-    // it is fetched lazily rather than alongside the main forecast. Failure
-    // of any kind is silent: ensemble stays null and the lead-time fallback
-    // in confidenceForDay keeps both popups working.
+    // Heavy (51 members × 14 days) and only useful once a day popup is open,
+    // so it is fetched lazily rather than alongside the main forecast.
+    // Failure of any kind is silent: ensemble stays null and the day popup
+    // simply has no confidence tile.
     const fetchEnsembleData = async (lat, lon) => {
         try {
             const response = await fetch(ensembleUrl(lat, lon));
@@ -775,6 +787,42 @@ document.addEventListener('DOMContentLoaded', () => {
             lastRender.ensemble = ensemble;
             refreshDetail();   // fills in the confidence tile if a popup is open
         });
+    };
+
+    // Past days: a separate, small daily-only request (same Forecast host),
+    // made only when the "Past 7 days" popup is first opened for a location.
+    // forecast_days=0 returns exactly the 7 days up to yesterday.
+    const PAST_DAYS = 7;
+    const pastDaysUrl = (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
+        + `?latitude=${lat}&longitude=${lon}`
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max'
+        + `&past_days=${PAST_DAYS}&forecast_days=0&timezone=auto`;
+
+    let pastDays = null;   // { for: lastCoords it belongs to, status: 'loading'|'ready'|'error', daily }
+
+    // Fetches once per location; a failed attempt is retried on the next open
+    const ensurePastDaysLoaded = () => {
+        if (!lastCoords) return;
+        if (pastDays && pastDays.for === lastCoords && pastDays.status !== 'error') return;
+        const target = lastCoords;
+        pastDays = { for: target, status: 'loading', daily: null };
+        fetch(pastDaysUrl(target.lat, target.lon))
+            .then((response) => {
+                if (!response.ok) throw new Error('Failed to fetch past days.');
+                return response.json();
+            })
+            .then((data) => {
+                if (!data || !data.daily || !data.daily.time) throw new Error('Empty past days response.');
+                if (lastCoords !== target) return;   // superseded by a newer location
+                pastDays = { for: target, status: 'ready', daily: data.daily };
+                refreshDetail();
+            })
+            .catch((err) => {
+                console.warn('Past days fetch failed:', err);
+                if (lastCoords !== target) return;
+                pastDays = { for: target, status: 'error', daily: null };
+                refreshDetail();
+            });
     };
 
     const fetchWeatherData = async (lat, lon, meta) => {
@@ -2298,6 +2346,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Past 7 days: plain rows, yesterday on top, each with its own data
+    // (precipitation that fell, max wind, low–high bar scaled to the week)
+    const renderPastDetail = (bodyEl) => {
+        const ready = pastDays && pastDays.for === lastCoords && pastDays.status === 'ready';
+        if (!ready) {
+            const failed = pastDays && pastDays.status === 'error';
+            bodyEl.innerHTML = `<div class="t-cap section-muted">${failed ? TXT.past.error : TXT.past.loading}</div>`;
+            return;
+        }
+
+        const daily = pastDays.daily;
+        const value = (key, k) => {
+            const v = daily[key] ? daily[key][k] : null;
+            return (v != null && isFinite(v)) ? v : null;
+        };
+        const days = daily.time.map((_, k) => k).filter((k) => value('temperature_2m_min', k) != null && value('temperature_2m_max', k) != null);
+        if (!days.length) {
+            bodyEl.innerHTML = `<div class="t-cap section-muted">${TXT.past.error}</div>`;
+            return;
+        }
+
+        const weekLo = Math.min(...days.map((k) => value('temperature_2m_min', k)));
+        const weekHi = Math.max(...days.map((k) => value('temperature_2m_max', k)));
+        const span = Math.max(1, weekHi - weekLo);
+        const yesterday = days[days.length - 1];
+
+        const rows = days.slice().reverse().map((k) => {
+            const date = daily.time[k];
+            const name = k === yesterday ? TXT.past.yesterday : getDayName(date, -1);
+            const code = value('weather_code', k);
+            const lo = value('temperature_2m_min', k), hi = value('temperature_2m_max', k);
+            const mm = value('precipitation_sum', k);
+            const wind = value('wind_speed_10m_max', k);
+            const label = TXT.past.rowLabel(`${name} ${formatMonthDay(date)}`, getWeatherCondition(code),
+                Math.round(hi), Math.round(lo), fmtOr(mm, 1), fmtOr(wind, 0));
+            return `
+                <div class="past-row" role="listitem" aria-label="${label}">
+                    <div class="past-day"><span class="t-body-emph">${name}</span><span class="t-cap">${formatMonthDay(date)}</span></div>
+                    <div class="past-icon">${getIcon(code, true, 24)}</div>
+                    <div class="t-cap-accent">${fmtOr(mm, 1, ' mm')}</div>
+                    <div class="t-cap">${fmtOr(wind, 0, ' ' + TXT.kmh)}</div>
+                    <div class="past-temps">
+                        <span class="t-body">${Math.round(lo)}°</span>
+                        ${tempRangeBarHtml(lo, hi, weekLo, span)}
+                        <span class="t-body-emph">${Math.round(hi)}°</span>
+                    </div>
+                </div>`;
+        }).join('');
+
+        bodyEl.innerHTML = `<div class="past-list" role="list">${rows}</div>${attributionHtml(false)}`;
+    };
+
     // preserveScroll keeps the reading position when the body is re-rendered
     // in place (e.g. air quality landing after the popup already opened).
     const renderDetail = (preserveScroll) => {
@@ -2309,8 +2409,16 @@ document.addEventListener('DOMContentLoaded', () => {
         destroyChartMounts();   // the body is about to be replaced wholesale
 
         detailBackBtn.classList.toggle('hidden', !detailState.fromDay);
+        // The past-days list has nothing to step through
+        detailPrevBtn.classList.toggle('hidden', detailState.view === 'past');
+        detailNextBtn.classList.toggle('hidden', detailState.view === 'past');
 
-        if (detailState.view === 'hour') {
+        if (detailState.view === 'past') {
+            // The fetch starts from openDetail, not here: a re-render after a
+            // failure must show the error, not retry (that would loop)
+            detailTitleEl.textContent = TXT.past.title;
+            renderPastDetail(detailBodyEl);
+        } else if (detailState.view === 'hour') {
             const i = detailState.hourIndex;
             const iso = hourly.time[i];
             const dateStr = iso.slice(0, 10);
@@ -2347,7 +2455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const navigateDetail = (delta) => {
-        if (!detailOpen || !detailState || !lastRender) return;
+        if (!detailOpen || !detailState || !lastRender || detailState.view === 'past') return;
         if (detailState.view === 'hour') {
             const times = lastRender.data.hourly.time;
             const next = detailState.hourIndex + delta;
@@ -2374,9 +2482,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openDetail = (view, index, triggerEl) => {
         if (!lastRender) return;
-        detailState = view === 'hour'
-            ? { view: 'hour', hourIndex: index, dayIndex: dayIndexForHour(index), fromDay: false }
-            : { view: 'day', hourIndex: null, dayIndex: index, fromDay: false };
+        detailState = view === 'hour' ? { view: 'hour', hourIndex: index, dayIndex: dayIndexForHour(index), fromDay: false }
+            : view === 'day' ? { view: 'day', hourIndex: null, dayIndex: index, fromDay: false }
+            : { view: 'past', hourIndex: null, dayIndex: null, fromDay: false };
+        if (view === 'past') ensurePastDaysLoaded();   // once per location; a failed one retries on the next open
         renderDetail();
         if (detailOpen) return;
 
@@ -2442,7 +2551,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxIdx = lastRender.data.hourly.time.length - 1;
             detailState.hourIndex = Math.min(detailState.hourIndex, maxIdx);
             detailState.dayIndex = dayIndexForHour(detailState.hourIndex);
-        } else {
+        } else if (detailState.view === 'day') {
             const maxIdx = lastRender.data.daily.time.length - 1;
             detailState.dayIndex = Math.min(detailState.dayIndex, maxIdx);
         }
@@ -2551,6 +2660,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         openDetail('day', Number(row.dataset.dayIndex), row);
     });
+    const pastDaysBtn = document.getElementById('past-days-btn');
+    pastDaysBtn.addEventListener('click', () => openDetail('past', null, pastDaysBtn));
 
     /* =====================================================================
        Search + autocomplete

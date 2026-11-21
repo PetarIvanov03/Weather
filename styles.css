@@ -405,7 +405,32 @@ main {
 @media (min-width: 768px) { .wx-right { flex: 1 1 30%; min-height: 0; display: flex; } }
 .forecast-card { padding: 12px 14px; display: flex; flex-direction: column; }
 @media (min-width: 768px) { .forecast-card { padding: 16px 20px; flex: 1; min-height: 0; } }
-.forecast-heading { margin-bottom: 4px; }
+.forecast-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+/* "Past 7 days" pill — same look as the chart tabs */
+.past-btn {
+    flex: 0 0 auto; border-radius: 999px; padding: 4px 11px;
+    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: background 0.15s;
+}
+.past-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) { .past-btn:hover { background: rgba(255, 255, 255, 0.16); } }
+@media (prefers-reduced-motion: reduce) { .past-btn { transition: none; } }
+
+/* Past-days popup: one row per day, yesterday on top (not clickable) */
+.past-list { display: flex; flex-direction: column; }
+.past-row {
+    display: grid; grid-template-columns: 88px 26px 1fr 1fr; align-items: center; gap: 6px 8px;
+    padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.past-row:first-child { border-top: 0; }
+.past-day { display: flex; flex-direction: column; line-height: 1.2; }
+.past-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+.past-temps { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+.past-temps .temp-track { flex: 1 1 0; }
+@media (min-width: 768px) {
+    .past-row { grid-template-columns: 110px 28px 90px 90px 1fr; }
+    .past-temps { grid-column: auto; }
+}
 .forecast-scroll { display: flex; flex-direction: column; }
 @media (min-width: 768px) { .forecast-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; } }
 .forecast-scroll::-webkit-scrollbar { display: none; }
