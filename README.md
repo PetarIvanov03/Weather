@@ -122,6 +122,7 @@ Then open <http://localhost:8000>.
 - **iOS Safari** — text inputs are forced to a 16px computed font size on touch viewports, with compensating line-height, to prevent Safari's zoom-on-focus
 - **Safe areas** — the viewport meta tag sets `viewport-fit=cover` so `env(safe-area-inset-*)` resolves to real values (without it Safari clamps every inset to 0); the detail popup's bottom sheet uses it for the home-indicator area and, in landscape, the left/right notch
 - **Stacking** — the search row is `z-30` because the `animate-fade-in` sections create their own stacking contexts; without it the autocomplete dropdown paints beneath the weather card
+- **No text selection** — like a native app, text can't be selected or copied (and iOS shows no long-press callout); the search input stays selectable
 - **Localisation** — English only; all strings live in a single `TXT` object in `app.js` (descriptive word scales under `TXT.words`, their numeric bounds next to the other thresholds)
 
 ## Known limitations
