@@ -88,7 +88,7 @@ The UI implements a Claude Design project (mobile and desktop pages) as one resp
 
 - **Glassmorphism cards** — translucent layered backgrounds with `backdrop-filter: blur(18px)`
 - **Soft SVG icon set** — sun, moon, cloud and rain from the design, extended in the same style with partly-cloudy (day and night), snow, fog and thunder to cover all WMO codes
-- **Typography** — Inter, thin-weight hero type (100–108px), uppercase tracked labels
+- **Typography** — Inter, regular-weight hero type (108–112px), medium-weight body text with captions no smaller than 15px, uppercase tracked labels; text that sits directly on a bright day photo gets a stronger shadow
 - **Branding** — app icon at `assets/icon.png`, with favicon, apple-touch and PWA sizes generated into `assets/icons/`; `manifest.json` plus Open Graph and Twitter tags make the app installable and give it a proper link preview
 
 ## Data sources

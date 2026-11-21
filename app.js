@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="day-icon">${icon}</div>
                     <div class="t-cap-accent" style="line-height: 1;">${precip}%</div>
                     <div class="day-bar-wrap">
-                        <span class="t-body" style="width: 24px; line-height: 1;">${minTemp}°</span>
+                        <span class="t-body" style="width: 32px; flex-shrink: 0; line-height: 1;">${minTemp}°</span>
                         <div class="temp-track">
                             <div class="temp-fill" style="left: ${left}%; width: ${width}%; background: linear-gradient(90deg, ${tempColor(daily.temperature_2m_min[i])}, ${tempColor(daily.temperature_2m_max[i])});"></div>
                         </div>
