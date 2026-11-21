@@ -13,10 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
         uvIndex: 'UV Index',
         wind: 'Wind',
         humidity: 'Humidity',
-        sunsun: 'Sunrise / Sunset',
+        sun: 'Sun',
+        sunrise: 'Sunrise',
+        sunset: 'Sunset',
+        daylight: 'Daylight',
         dewPoint: 'Dew point',
         feelsLike: 'Feels like',
-        sets: 'Sets',
         kmh: 'km/h',
         today: 'Today',
         now: 'Now',
@@ -503,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uiUvBar = document.getElementById('uv-bar');
     const uiSunrise = document.getElementById('sunrise');
     const uiSunset = document.getElementById('sunset');
+    const uiDaylight = document.getElementById('daylight');
     const uiForecastList = document.getElementById('weather-forecast-list');
     const rail = document.getElementById('hourly-rail');
 
@@ -744,6 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uiSunrise.textContent = formatClock(daily.sunrise[0]);
         uiSunset.textContent = formatClock(daily.sunset[0]);
+        uiDaylight.textContent = formatDuration(daily.daylight_duration && daily.daylight_duration[0]);
 
         renderHourly(hourly, current.time);
         renderDaily(daily);
@@ -2040,7 +2044,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formatDuration = (seconds) => {
         if (seconds == null) return DASH;
         const mins = Math.round(seconds / 60);
-        return `${Math.floor(mins / 60)} h ${mins % 60} m`;
+        return `${Math.floor(mins / 60)}h ${mins % 60}min`;   // "14h 2min"
     };
 
     /* ---------- aggregation ---------- */

@@ -54,7 +54,7 @@ Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript me
 - **Current conditions** — temperature (°C), condition, feels-like, today's high and low
 - **Hourly rail** — next 24 hours with icon, temperature, precipitation probability, wind, and UV index; horizontally scrollable with snap, the ‹ › chevrons scroll one screenful, and a thin line under the cards shows the scroll position
 - **14-day forecast** — day, icon, precipitation %, and low/high with a range bar scaled to the forecast's global min and max
-- **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, sunrise and sunset
+- **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, and sun (sunrise and sunset as two labelled rows, plus day length)
 - **Hour/day detail popups** — tap an hour or a day for a chart plus a full tile grid: precipitation, wind, humidity, pressure, clouds, visibility, UV, thunderstorm risk, snow, air quality, pollen, and a forecast-confidence rating — see [Detail popups](#detail-popups)
 - **Search autocomplete** — debounced, up to 8 disambiguated matches (`name, region, country`) so same-named cities like Dimitrovgrad in Bulgaria and in Russia are both reachable; full keyboard support (↑/↓, Enter, Esc) with `aria-activedescendant` tracking the highlighted option
 - **Last location remembered** — the most recent result is saved to `localStorage` and restored on the next visit
