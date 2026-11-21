@@ -58,36 +58,22 @@ document.addEventListener('DOMContentLoaded', () => {
         detail: {
             feelsLike: 'Feels like',
             confidenceLevels: { high: 'High', medium: 'Medium', low: 'Low' },
-            confidenceBadge: {
-                medium: 'Medium confidence',
-                low: 'Low confidence',
-                interpolated: 'Hourly values are interpolated',
-            },
             precipitation: 'Precipitation',
             chance: 'Chance',
             dry: 'Dry',
-            rain: 'Rain',
-            showers: 'Showers',
             snow: 'Snow',
             wind: 'Wind',
             gusts: 'Gusts',
             humidity: 'Humidity',
-            pressure: 'Pressure',
-            rising: 'Rising',
-            steady: 'Steady',
-            falling: 'Falling',
             visibility: 'Visibility',
             uvIndex: 'UV Index',
             thunder: 'Thunderstorm risk',
             estimated: 'Estimated',
             thunderLevels: { none: 'None', low: 'Low', moderate: 'Moderate', high: 'High' },
-            snowTitle: 'Snow & freezing level',
             airQuality: 'Air quality',
             aqiLabel: 'European AQI',
             aqUnavailable: 'Air quality forecast covers about 4–5 days.',
-            leadingPollutant: 'Leading pollutant',
             pollen: 'Pollen',
-            noPollen: 'No significant pollen expected',
             pollenSpecies: {
                 alder_pollen: 'Alder',
                 birch_pollen: 'Birch',
@@ -95,13 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 mugwort_pollen: 'Mugwort',
                 olive_pollen: 'Olive',
                 ragweed_pollen: 'Ragweed',
-            },
-            pollutants: {
-                pm2_5: 'PM2.5',
-                pm10: 'PM10',
-                ozone: 'O₃',
-                nitrogen_dioxide: 'NO₂',
-                sulphur_dioxide: 'SO₂',
             },
             attribution: {
                 weather: 'Weather data by',
@@ -127,52 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 thunder: (word) => `${word} thunderstorm risk.`,
                 snow: (cm) => `${cm} cm of snow expected.`,
             },
-            precipHours: 'Precip. hours',
-            maxChance: 'Max chance',
-            maxGust: 'Max gust',
-            meanWind: 'Mean',
             sun: 'Sun',
             sunrise: 'Sunrise',
             sunset: 'Sunset',
             daylight: 'Daylight',
-            sunshine: 'Sunshine',
-            uvClearSky: 'Clear sky max',
-            uvPeak: 'Peak',
             protection: (range) => `Protection recommended ${range}`,
-            noProtection: 'No protection needed',
-            moon: 'Moon',
-            moonrise: 'Moonrise',
-            moonset: 'Moonset',
-            min: 'Min',
-            max: 'Max',
-            mean: 'Mean',
-            dewPointMean: 'Mean dew point',
-            change: 'Change',
-            cloudsVisibility: 'Clouds & visibility',
-            minVisibility: 'Min visibility',
-            maxCape: 'Max CAPE',
-            atHour: 'At',
-            snowfallSum: 'Snowfall',
-            maxSnowDepth: 'Max snow depth',
-            minFreezingLevel: 'Lowest freezing level',
             aqiMax: 'Max European AQI',
-            pm25Range: 'PM2.5 range',
             pollenPeak: 'daily peak',
             confidenceTile: {
                 title: 'Forecast confidence',
-                range: (n, p10, p90, median) => `Temperature range across ${n} forecasts: ${p10}–${p90}° (median ${median}°)`,
-                explain: 'A wider range means less certainty.',
-                model: 'ECMWF IFS (51 members)',
-            },
-            compare: {
-                warmer: (n, ref) => `${n}° warmer than ${ref}`,
-                cooler: (n, ref) => `${n}° cooler than ${ref}`,
-                same: (ref) => `About the same as ${ref}`,
-                refToday: 'today',
-                refPrevDay: 'the day before',
-                tomorrowWarmer: (n) => `Tomorrow will be ${n}° warmer`,
-                tomorrowCooler: (n) => `Tomorrow will be ${n}° cooler`,
-                tomorrowSame: 'Tomorrow will be about the same',
+                range: (p10, p90) => `Most forecasts: ${p10}–${p90}° (a wider range means less certainty)`,
             },
         },
         chartSeries: {
@@ -186,15 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Words for the [upper bound, word] tables; the bounds themselves live
         // with the other thresholds in "Detail popup content" / "Day popup"
         words: {
-            wind: { calm: 'Calm', light: 'Light', moderate: 'Moderate', fresh: 'Fresh', strong: 'Strong', veryStrong: 'Very strong' },
-            dewPoint: { dry: 'Dry', comfortable: 'Comfortable', humid: 'Humid', oppressive: 'Oppressive' },
             visibility: { veryPoor: 'Very poor', poor: 'Poor', moderate: 'Moderate', good: 'Good' },
             pollen: { low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high' },
             aqi: { good: 'Good', fair: 'Fair', moderate: 'Moderate', poor: 'Poor', veryPoor: 'Very poor', extremelyPoor: 'Extremely poor' },
-            moon: {
-                newMoon: 'New moon', waxingCrescent: 'Waxing crescent', firstQuarter: 'First quarter', waxingGibbous: 'Waxing gibbous',
-                fullMoon: 'Full moon', waningGibbous: 'Waning gibbous', lastQuarter: 'Last quarter', waningCrescent: 'Waning crescent',
-            },
         },
     };
 
@@ -773,18 +710,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const forecastUrl = (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
         + `?latitude=${lat}&longitude=${lon}`
         + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
-        + '&hourly=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,precipitation_probability,snowfall,snow_depth,'
-        + 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,'
-        + 'visibility,uv_index,cape,lifted_index,freezing_level_height'
+        + '&hourly=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,precipitation_probability,snowfall,'
+        + 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,visibility,uv_index,cape,lifted_index'
         + '&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,'
-        + 'sunshine_duration,uv_index_max,uv_index_clear_sky_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,'
-        + 'precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,moonrise,moonset,moon_phase'
+        + 'uv_index_max,precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant'
         + '&forecast_days=14&timezone=auto';
 
     const airQualityUrl = (lat, lon) => 'https://air-quality-api.open-meteo.com/v1/air-quality'
         + `?latitude=${lat}&longitude=${lon}`
-        + '&hourly=european_aqi,european_aqi_pm2_5,european_aqi_pm10,european_aqi_nitrogen_dioxide,european_aqi_ozone,european_aqi_sulphur_dioxide,'
-        + 'pm2_5,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen'
+        + '&hourly=european_aqi,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen'
         + '&forecast_days=5&timezone=auto';
 
     // Best-effort air quality fetch: failure of any kind (network, non-200,
@@ -805,7 +739,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // HTTP 200, 51 members (temperature_2m + _member01..50), full hourly
     // (not 3-/6-hourly) coverage, and honours forecast_days=14 (336 rows).
     const ENSEMBLE_MODEL_ID = 'ecmwf_ifs025';
-    const ENSEMBLE_MODEL_LABEL = TXT.day.confidenceTile.model;
 
     const ensembleUrl = (lat, lon) => 'https://ensemble-api.open-meteo.com/v1/ensemble'
         + `?latitude=${lat}&longitude=${lon}`
@@ -1484,10 +1417,6 @@ document.addEventListener('DOMContentLoaded', () => {
        Every descriptive word and cut-off lives here so it is easy to tune.
        ===================================================================== */
 
-    // Beyond this day the models publish 3–6-hourly output that Open-Meteo
-    // interpolates back to hourly, so single hours carry less real detail.
-    const LOW_CONFIDENCE_FROM_DAY = 7;   // 0-based day index → the 8th day onward
-
     // Ensemble spread (p90 − p10 of members' daily mean temperature, °C).
     // Sanity-checked live for Sofia: ~0.6–1.2° on days 0–3 (high), ~3.4–4.1°
     // on days 4–9 (medium, day 7 just tips into low), ~5.1–5.6° on days
@@ -1498,20 +1427,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // [upper bound (exclusive), word] — the last entry is the catch-all
     // Words come from TXT.words so all copy stays in one place
     const W = TXT.words;
-    const WIND_WORDS = [[2, W.wind.calm], [12, W.wind.light], [20, W.wind.moderate], [29, W.wind.fresh], [39, W.wind.strong], [Infinity, W.wind.veryStrong]];
-    const DEW_POINT_WORDS = [[10, W.dewPoint.dry], [16, W.dewPoint.comfortable], [21, W.dewPoint.humid], [Infinity, W.dewPoint.oppressive]];
     const VISIBILITY_WORDS = [[1, W.visibility.veryPoor], [4, W.visibility.poor], [10, W.visibility.moderate], [Infinity, W.visibility.good]];  // km
 
-    const SNOW_TILE_MAX_TEMP = 4;     // °C — show the snow tile at or below this
     const VISIBILITY_TILE_BELOW_KM = 4;   // hour popup shows visibility only below this
-    const VISIBILITY_DECIMAL_BELOW_KM = 10;
 
     // Approximate pollen scale (grains/m³). Open-Meteo publishes no official
     // band table for these, so these are widely-used rough thresholds —
     // indicative only, tune freely.
     const POLLEN_LEVELS = [[10, W.pollen.low], [50, W.pollen.moderate], [200, W.pollen.high], [Infinity, W.pollen.veryHigh]];
     const POLLEN_BAR_FULL = 200;      // grains/m³ that fills the level bar
-    const POLLEN_NOTABLE_FROM = POLLEN_LEVELS[0][0];   // hour popup lists only species above "Low"
+    const POLLEN_NOTABLE_FROM = POLLEN_LEVELS[0][0];   // popups list only species above "Low"
 
     // European AQI bands and their official colours
     const AQI_BANDS = [
@@ -1523,7 +1448,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { max: Infinity, name: W.aqi.extremelyPoor, color: '#7d2181' },
     ];
     const AQI_SCALE_MAX = 120;        // the open-ended top band is clipped here on the bar
-    const AQI_SUB_INDEX_KEYS = ['pm2_5', 'pm10', 'ozone', 'nitrogen_dioxide', 'sulphur_dioxide'];
 
     // Thunderstorm estimate. CAPE in J/kg (higher = more energy); lifted index
     // in °C (NEGATIVE = unstable). Steps map onto none / low / moderate / high.
@@ -1592,33 +1516,9 @@ document.addEventListener('DOMContentLoaded', () => {
             min: means[0], max: means[means.length - 1],
             p10: quantile(means, 0.10), median: quantile(means, 0.5), p90: quantile(means, 0.90),
             spread: quantile(means, 0.90) - quantile(means, 0.10),
-            members: means.length, model: ENSEMBLE_MODEL_LABEL,
         };
     };
 
-    // Ensemble spread when available (source 'ensemble'); otherwise the
-    // lead-time rule (source 'lead-time'). Both popups keep working either way.
-    const confidenceForDay = (dayIndex) => {
-        const stats = ensembleStatsForDay(dayIndex);
-        if (stats) {
-            const level = stats.spread <= ENSEMBLE_SPREAD_HIGH_C ? 'high'
-                : stats.spread <= ENSEMBLE_SPREAD_MEDIUM_C ? 'medium' : 'low';
-            return { level, source: 'ensemble', spread: stats.spread, members: stats.members, model: stats.model };
-        }
-        return {
-            level: (dayIndex != null && dayIndex >= LOW_CONFIDENCE_FROM_DAY) ? 'low' : 'high',
-            source: 'lead-time', spread: null, members: null, model: null,
-        };
-    };
-
-    // Badge for both popups: hidden at 'high', otherwise the level word plus
-    // an interpolation note gated purely on lead time (independent of level).
-    const confidenceBadgeHtml = (confidence, dayIndex) => {
-        if (confidence.level === 'high') return '';
-        const interpolated = dayIndex != null && dayIndex >= LOW_CONFIDENCE_FROM_DAY;
-        return `<div class="confidence-badge confidence-badge--${confidence.level} t-cap">`
-            + `${TXT.detail.confidenceBadge[confidence.level]}${interpolated ? ` · ${TXT.detail.confidenceBadge.interpolated}` : ''}</div>`;
-    };
 
     const aqiBandFor = (aqi) => {
         for (let k = 0; k < AQI_BANDS.length; k++) if (aqi < AQI_BANDS[k].max) return AQI_BANDS[k];
@@ -1645,12 +1545,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ---------- shared markup fragments ---------- */
-    const tileHtml = (title, body, note) => `
-        <div class="detail-tile">
+    // size 'wide' spans the whole row of the compact grid
+    const TILE_OPEN = '<div class="detail-tile">';
+    const TILE_OPEN_WIDE = '<div class="detail-tile detail-tile--wide">';
+    const tileHtml = (title, body, note, size) => `
+        ${size === 'wide' ? TILE_OPEN_WIDE : TILE_OPEN}
             <div class="t-cap-heading">${title}${note ? ` <span class="tile-note">${note}</span>` : ''}</div>
             ${body}
         </div>
     `;
+
+    // The compact grid holds two tiles per row. Tiles come and go with the
+    // weather, so a run of narrow tiles can end on an odd one out; widen
+    // that last one instead of leaving a hole next to it.
+    const compactTilesHtml = (tiles) => {
+        const list = tiles.filter(Boolean);
+        let runStart = 0;
+        list.forEach((html, k) => {
+            const wide = html.includes(TILE_OPEN_WIDE);
+            const runEnd = wide || k === list.length - 1;
+            if (!runEnd) return;
+            const last = wide ? k - 1 : k;
+            if (last >= runStart && (last - runStart + 1) % 2 === 1) list[last] = list[last].replace(TILE_OPEN, TILE_OPEN_WIDE);
+            runStart = k + 1;
+        });
+        return list.join('');
+    };
 
     // Wind direction is plain text: the compass point it blows from ("NW")
     const windFromHtml = (deg) => `<span class="t-cap">${getCompass(deg)}</span>`;
@@ -1816,27 +1736,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const PRECIP_WINDOW_MM = 0.2;
     const PRECIP_WINDOW_PROB = 50;
     const PRECIP_WINDOW_MAX_GAP = 1;      // merge windows split by ≤ this many dry hours
-    const UV_PROTECTION_FROM = 3;         // uv_index at/above which protection is advised
-
-    // The hour tile's ±1 hPa judges a 3-hour span; a whole day moves more
-    // before it is worth calling a trend, hence a separate threshold.
-    const DAY_PRESSURE_STEADY_HPA = 2;
-    const DAY_COMPARE_SAME_C = 1;         // |Δmax| at/below this reads as "about the same"
+    const UV_PROTECTION_FROM = 3;         // uv_index at/above which protection is advised (and the UV tile shows)
 
     // Summary sentence triggers
     const SUMMARY_GUST_KMH = 45;
     const SUMMARY_UV_HIGH = 6;
     const SUMMARY_SMALL_CHANCE_PCT = 30;
     const SUMMARY_MAX_EXTRAS = 2;         // highlights appended after the base sentence
-
-    // Open-Meteo `moon_phase` is a fraction of the synodic month, verified
-    // live as 0–1 (unit "fraction"): 0/1 = new, 0.25 = first quarter,
-    // 0.5 = full, 0.75 = last quarter. Bands below are centred on those.
-    const MOON_PHASE_NAMES = [
-        [0.0625, W.moon.newMoon], [0.1875, W.moon.waxingCrescent], [0.3125, W.moon.firstQuarter],
-        [0.4375, W.moon.waxingGibbous], [0.5625, W.moon.fullMoon], [0.6875, W.moon.waningGibbous],
-        [0.8125, W.moon.lastQuarter], [0.9375, W.moon.waningCrescent], [Infinity, W.moon.newMoon],
-    ];
 
     /* ---------- daily accessors ---------- */
     const dailyValue = (key, d) => {
@@ -1871,29 +1777,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ---------- aggregation ---------- */
-    // min / max / mean over one hourly variable, remembering where the
-    // extremes fell (absolute hourly indices), or null when nothing is known.
-    const statsOver = (indices, key) => {
-        let min = Infinity, max = -Infinity, sum = 0, count = 0, minIndex = -1, maxIndex = -1;
+    // Highest value of one hourly variable over the day, or null when unknown
+    const maxOver = (indices, key) => {
+        let max = null;
         indices.forEach((i) => {
             const v = hourlyValue(key, i);
-            if (v == null) return;
-            if (v < min) { min = v; minIndex = i; }
-            if (v > max) { max = v; maxIndex = i; }
-            sum += v; count++;
+            if (v != null && (max === null || v > max)) max = v;
         });
-        return count ? { min, max, mean: sum / count, minIndex, maxIndex, count } : null;
-    };
-
-    const firstLastChange = (indices, key) => {
-        let first = null, last = null;
-        indices.forEach((i) => {
-            const v = hourlyValue(key, i);
-            if (v == null) return;
-            if (first === null) first = v;
-            last = v;
-        });
-        return first === null ? null : last - first;
+        return max;
     };
 
     // Consecutive wet hours, merged across short dry gaps.
@@ -1938,16 +1829,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const indices = hourIndicesForDay(dayIndex);
         if (!indices.length) return null;
 
-        const humidity = statsOver(indices, 'relative_humidity_2m');
-        const dewPoint = statsOver(indices, 'dew_point_2m');
-        const pressure = statsOver(indices, 'pressure_msl');
-        const cloud = statsOver(indices, 'cloud_cover');
-        const visibility = statsOver(indices, 'visibility');
-        const wind = statsOver(indices, 'wind_speed_10m');
-        const cape = statsOver(indices, 'cape');
-        const uv = statsOver(indices, 'uv_index');
-        const snowDepth = statsOver(indices, 'snow_depth');
-        const freezing = statsOver(indices, 'freezing_level_height');
+        const capeMax = maxOver(indices, 'cape');   // feeds the thunder tile and summary
 
         // UV protection window: first → last hour at or above the threshold
         let uvFrom = null, uvTo = null;
@@ -1958,60 +1840,37 @@ document.addEventListener('DOMContentLoaded', () => {
             uvTo = i;
         });
 
-        // Air quality — a day near the end of the range may be only partly covered
-        let aqiMax = null, aqiHourIndex = -1, aqiLeading = null;
-        let pm25Min = null, pm25Max = null, aqHours = 0;
+        // Air quality: the day's worst hour — a day near the end of the range
+        // may be only partly covered
+        let aqiMax = null, aqHours = 0;
         indices.forEach((i) => {
             const aq = aqAt(i);
             if (!aq) return;
             aqHours++;
-            if (aq.european_aqi != null && (aqiMax === null || aq.european_aqi > aqiMax)) {
-                aqiMax = aq.european_aqi;
-                aqiHourIndex = i;
-                let best = -Infinity;
-                aqiLeading = null;
-                AQI_SUB_INDEX_KEYS.forEach((key) => {
-                    const sub = aq[`european_aqi_${key}`];
-                    if (sub != null && sub > best) { best = sub; aqiLeading = key; }
-                });
-            }
-            if (aq.pm2_5 != null) {
-                pm25Min = pm25Min === null ? aq.pm2_5 : Math.min(pm25Min, aq.pm2_5);
-                pm25Max = pm25Max === null ? aq.pm2_5 : Math.max(pm25Max, aq.pm2_5);
-            }
+            if (aq.european_aqi != null && (aqiMax === null || aq.european_aqi > aqiMax)) aqiMax = aq.european_aqi;
         });
 
         // Pollen peak per species, with the hour it peaks
         const pollen = {};
         Object.keys(TXT.detail.pollenSpecies).forEach((key) => {
-            let peak = null, hourIndex = -1, seen = false;
+            let peak = null, seen = false;
             indices.forEach((i) => {
                 const aq = aqAt(i);
                 const v = aq ? aq[key] : null;
                 if (v == null) return;
                 seen = true;
-                if (peak === null || v > peak) { peak = v; hourIndex = i; }
+                if (peak === null || v > peak) peak = v;
             });
-            if (seen) pollen[key] = { value: peak, hourIndex };
+            if (seen) pollen[key] = { value: peak };
         });
 
         return {
             indices,
-            humidity,
-            dewPointMean: dewPoint ? dewPoint.mean : null,
-            pressure: pressure ? { min: pressure.min, max: pressure.max, change: firstLastChange(indices, 'pressure_msl') } : null,
-            cloudCoverMean: cloud ? cloud.mean : null,
-            visibilityMin: visibility ? visibility.min : null,
-            windSpeedMean: wind ? wind.mean : null,
-            cape: cape ? { max: cape.max, hourIndex: cape.maxIndex } : null,
-            uvPeakHour: uv && uv.max > 0 ? uv.maxIndex : null,
+            capeMax,
             precipitationWindows: precipitationWindows(indices),
             uvProtectionWindow: uvFrom === null ? null : { from: uvFrom, to: uvTo },
-            airQuality: aqHours ? { max: aqiMax, hourIndex: aqiHourIndex, leading: aqiLeading, hours: aqHours } : null,
-            pm25: pm25Min === null ? null : { min: pm25Min, max: pm25Max },
+            airQuality: aqHours ? { max: aqiMax } : null,
             pollen,
-            snowDepthMax: snowDepth ? snowDepth.max : null,
-            freezingLevelMin: freezing ? freezing.min : null,
         };
     };
 
@@ -2058,8 +1917,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const uvMax = dailyValue('uv_index_max', dayIndex);
         if (uvMax != null && uvMax >= SUMMARY_UV_HIGH) extras.push(S.highUv(Math.round(uvMax)));
 
-        if (agg && agg.cape) {
-            const risk = thunderRisk(agg.cape.max, null, code);
+        if (agg && agg.capeMax != null) {
+            const risk = thunderRisk(agg.capeMax, null, code);
             if (risk === 'moderate' || risk === 'high') {
                 extras.push(S.thunder(TXT.detail.thunderLevels[risk]));
             }
@@ -2091,38 +1950,15 @@ document.addEventListener('DOMContentLoaded', () => {
         </svg>`;
     };
 
-    // Lit limb + elliptical terminator. rx shrinks to 0 at the quarters, and
-    // the terminator bulges toward the lit side only once past half-lit.
-    const moonGlyphHtml = (phase, size) => {
-        const r = size / 2 - 1;
-        const c = size / 2;
-        const angle = 2 * Math.PI * phase;
-        const rx = Math.abs(r * Math.cos(angle));
-        const litFraction = (1 - Math.cos(angle)) / 2;
-        const limbSweep = phase < 0.5 ? 1 : 0;                       // waxing lights the right limb
-        const termSweep = litFraction > 0.5 ? limbSweep : 1 - limbSweep;
-        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-            <circle cx="${c}" cy="${c}" r="${r}" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"></circle>
-            <path d="M${c} ${c - r} A${r} ${r} 0 0 ${limbSweep} ${c} ${c + r} A${rx.toFixed(2)} ${r} 0 0 ${termSweep} ${c} ${c - r} Z" fill="#d9def0"></path>
-        </svg>`;
-    };
-
-    /* ---------- day tiles ---------- */
+    /* ---------- day tiles ----------
+       Same compact style as the hour popup: a title, one big value, a line
+       or two. Tiles that only matter sometimes (UV, thunder, snow) hide
+       otherwise; the wider ones (wet windows, sun) span the full row. */
     const dayPrecipitationTile = (d, agg) => {
         const sum = dailyValue('precipitation_sum', d);
         const prob = dailyValue('precipitation_probability_max', d);
-        const hours = dailyValue('precipitation_hours', d);
-        const rain = dailyValue('rain_sum', d);
-        const showers = dailyValue('showers_sum', d);
         const snow = dailyValue('snowfall_sum', d);
         if (sum == null && prob == null) return '';
-
-        const rows = [];
-        if (rain != null && rain > 0) rows.push([TXT.detail.rain, fmtOr(rain, 1, ' mm')]);
-        if (showers != null && showers > 0) rows.push([TXT.detail.showers, fmtOr(showers, 1, ' mm')]);
-        if (snow != null && snow > 0) rows.push([TXT.detail.snow, fmtOr(snow, 1, ' cm')]);
-        if (hours != null) rows.push([TXT.day.precipHours, fmtOr(hours, 0, ' h')]);
-        if (prob != null) rows.push([TXT.day.maxChance, fmtOr(prob, 0, '%')]);
 
         const isSnowDay = snow != null && snow > 0;
         const windows = (agg ? agg.precipitationWindows : []).map((w) => {
@@ -2130,39 +1966,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const amount = isSnowDay && w.cm > 0 ? fmtOr(w.cm, 1, ' cm')
                 : w.mm > 0 ? fmtOr(w.mm, 1, ' mm')
                 : fmtOr(w.maxProb, 0, '%');
-            return `
-            <div class="tile-row">
-                <span class="t-cap">${formatHourRange(w.from, w.to)}</span>
-                <span class="t-cap-emph">${amount}</span>
-            </div>`;
+            return `<div class="tile-row"><span class="t-cap">${formatHourRange(w.from, w.to)}</span><span class="t-cap-emph">${amount}</span></div>`;
         }).join('');
 
-        const headline = (sum != null && sum > 0)
-            ? `<span class="t-value">${fmtOr(sum, 1)}</span><span class="tile-unit">mm</span>`
-            : `<span class="t-value">${sum == null ? DASH : TXT.detail.dry}</span>`;
-
+        const value = sum == null ? valueRowHtml(DASH)
+            : sum > 0 ? valueRowHtml(fmtOr(sum, 1), 'mm')
+            : valueRowHtml(TXT.detail.dry);
         return tileHtml(TXT.detail.precipitation, `
-            <div class="tile-value-row">${headline}</div>
-            ${rows.map(([k, v]) => `<div class="tile-row"><span class="t-cap">${k}</span><span class="t-cap-emph">${v}</span></div>`).join('')}
-            ${windows ? `<div class="tile-sub">${windows}</div>` : ''}
-        `);
+            ${value}
+            ${prob != null ? `<div class="t-cap">${TXT.detail.chance} <span class="t-cap-accent">${fmtOr(prob, 0, '%')}</span></div>` : ''}
+            ${windows}
+        `, null, windows ? 'wide' : '');
     };
 
-    const dayWindTile = (d, agg) => {
+    const dayWindTile = (d) => {
         const max = dailyValue('wind_speed_10m_max', d);
         const gust = dailyValue('wind_gusts_10m_max', d);
         const dir = dailyValue('wind_direction_10m_dominant', d);
-        const mean = agg ? agg.windSpeedMean : null;
-        if (max == null && gust == null && dir == null) return '';
+        if (max == null && gust == null) return '';
 
         return tileHtml(TXT.detail.wind, `
-            <div class="tile-value-row">
-                <span class="t-value">${fmtOr(max, 0)}</span><span class="tile-unit">${TXT.kmh}</span>
-                ${dir != null ? windFromHtml(dir) : ''}
-            </div>
-            ${max != null ? `<div class="t-body">${wordFor(WIND_WORDS, max)}</div>` : ''}
-            ${gust != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.maxGust}</span><span class="t-cap-emph">${fmtOr(gust, 0, ' ' + TXT.kmh)}</span></div>` : ''}
-            ${mean != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.meanWind}</span><span class="t-cap-emph">${fmtOr(mean, 0, ' ' + TXT.kmh)}</span></div>` : ''}
+            ${valueRowHtml(fmtOr(max, 0), TXT.kmh, dir != null ? windFromHtml(dir) : '')}
+            ${gust != null ? `<div class="t-cap">${TXT.detail.gusts} ${fmtOr(gust, 0, ' ' + TXT.kmh)}</div>` : ''}
         `);
     };
 
@@ -2170,133 +1995,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const sunrise = dailyText('sunrise', d);
         const sunset = dailyText('sunset', d);
         const daylight = dailyValue('daylight_duration', d);
-        const sunshine = dailyValue('sunshine_duration', d);
         if (!sunrise && !sunset && daylight == null) return '';
-
-        const pct = (sunshine != null && daylight != null && daylight > 0)
-            ? Math.min(100, sunshine / daylight * 100) : null;
         const nowIso = (d === 0 && lastRender.data.current) ? lastRender.data.current.time : null;
+        const item = (label, value) => `<span class="t-cap">${label} <span class="t-cap-emph">${value}</span></span>`;
 
         return tileHtml(TXT.day.sun, `
             ${sunArcHtml(sunrise, sunset, nowIso)}
-            <div class="tile-row"><span class="t-cap">${TXT.day.sunrise}</span><span class="t-cap-emph">${sunrise ? formatClock(sunrise) : DASH}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.day.sunset}</span><span class="t-cap-emph">${sunset ? formatClock(sunset) : DASH}</span></div>
-            ${daylight != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.daylight}</span><span class="t-cap-emph">${formatDuration(daylight)}</span></div>` : ''}
-            ${sunshine != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.sunshine}</span><span class="t-cap-emph">${formatDuration(sunshine)}${pct != null ? ` · ${Math.round(pct)}%` : ''}</span></div>` : ''}
-        `);
+            <div class="sun-times">
+                ${item(TXT.day.sunrise, sunrise ? formatClock(sunrise) : DASH)}
+                ${item(TXT.day.sunset, sunset ? formatClock(sunset) : DASH)}
+                ${daylight != null ? item(TXT.day.daylight, formatDuration(daylight)) : ''}
+            </div>
+        `, null, 'wide');
     };
 
+    // Only on days where protection is advised at some hour
     const dayUvTile = (d, agg) => {
         const max = dailyValue('uv_index_max', d);
-        const clear = dailyValue('uv_index_clear_sky_max', d);
-        if (max == null) return '';
-        const times = lastRender.data.hourly.time;
+        if (max == null || max < UV_PROTECTION_FROM) return '';
         const window = agg ? agg.uvProtectionWindow : null;
 
         return tileHtml(TXT.detail.uvIndex, `
-            <div class="tile-value-row"><span class="t-value">${uvTextHtml(max)}</span></div>
-            <div class="uv-bar-wrap">
-                <span class="t-body">${getUvLabel(max)}</span>
-                ${uvBarHtml(max)}
-            </div>
-            ${clear != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.uvClearSky}</span><span class="t-cap-emph">${uvTextHtml(clear)}</span></div>` : ''}
-            ${agg && agg.uvPeakHour != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.uvPeak}</span><span class="t-cap-emph">${formatHour(times[agg.uvPeakHour])}</span></div>` : ''}
-            <div class="t-cap tile-foot">${window
-                ? TXT.day.protection(formatHourRange(window.from, window.to))
-                : TXT.day.noProtection}</div>
+            ${valueRowHtml(uvTextHtml(max), '', `<span class="t-cap">${getUvLabel(max)}</span>`)}
+            ${uvBarHtml(max)}
+            ${window ? `<div class="t-cap">${TXT.day.protection(formatHourRange(window.from, window.to))}</div>` : ''}
         `);
     };
 
-    const dayMoonTile = (d) => {
-        const phase = dailyValue('moon_phase', d);
-        const rise = dailyText('moonrise', d);
-        const set = dailyText('moonset', d);
-        if (phase == null && !rise && !set) return '';
-
-        return tileHtml(TXT.day.moon, `
-            <div class="tile-value-row">
-                ${phase != null ? moonGlyphHtml(phase, 34) : ''}
-                <span class="t-body-emph">${phase != null ? wordFor(MOON_PHASE_NAMES, phase) : DASH}</span>
-            </div>
-            ${rise ? `<div class="tile-row"><span class="t-cap">${TXT.day.moonrise}</span><span class="t-cap-emph">${formatClock(rise)}</span></div>` : ''}
-            ${set ? `<div class="tile-row"><span class="t-cap">${TXT.day.moonset}</span><span class="t-cap-emph">${formatClock(set)}</span></div>` : ''}
-        `);
-    };
-
-    const dayHumidityTile = (d, agg) => {
-        if (!agg || !agg.humidity) return '';
-        const h = agg.humidity;
-        return tileHtml(TXT.detail.humidity, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(h.mean, 0)}</span><span class="tile-unit">% ${TXT.day.mean.toLowerCase()}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.day.min} / ${TXT.day.max}</span><span class="t-cap-emph">${fmtOr(h.min, 0, '%')} / ${fmtOr(h.max, 0, '%')}</span></div>
-            ${agg.dewPointMean != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.dewPointMean}</span><span class="t-cap-emph">${fmtOr(agg.dewPointMean, 0, '°')} · ${wordFor(DEW_POINT_WORDS, agg.dewPointMean)}</span></div>` : ''}
-        `);
-    };
-
-    const dayPressureTile = (d, agg) => {
-        if (!agg || !agg.pressure) return '';
-        const p = agg.pressure;
-        let trend = '';
-        if (p.change != null) {
-            const word = Math.abs(p.change) <= DAY_PRESSURE_STEADY_HPA ? TXT.detail.steady
-                : p.change > 0 ? TXT.detail.rising : TXT.detail.falling;
-            const glyph = Math.abs(p.change) <= DAY_PRESSURE_STEADY_HPA ? '→' : p.change > 0 ? '↑' : '↓';
-            trend = `<div class="tile-row"><span class="t-cap">${TXT.day.change}</span>`
-                + `<span class="t-cap-emph">${glyph} ${word} ${p.change > 0 ? '+' : ''}${p.change.toFixed(1)}</span></div>`;
-        }
-        return tileHtml(TXT.detail.pressure, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(p.max, 0)}</span><span class="tile-unit">hPa ${TXT.day.max.toLowerCase()}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.day.min} / ${TXT.day.max}</span><span class="t-cap-emph">${fmtOr(p.min, 0)} / ${fmtOr(p.max, 0)}</span></div>
-            ${trend}
-        `);
-    };
-
-    const dayCloudsTile = (d, agg) => {
-        if (!agg) return '';
-        const cloud = agg.cloudCoverMean;
-        const vis = agg.visibilityMin;
-        if (cloud == null && vis == null) return '';
-        const visKm = vis != null ? vis / 1000 : null;
-
-        return tileHtml(TXT.day.cloudsVisibility, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(cloud, 0)}</span><span class="tile-unit">% ${TXT.day.mean.toLowerCase()}</span></div>
-            ${visKm != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.minVisibility}</span><span class="t-cap-emph">${visKm < VISIBILITY_DECIMAL_BELOW_KM ? visKm.toFixed(1) : Math.round(visKm)} km</span></div>` : ''}
-            ${visKm != null ? `<div class="t-body">${wordFor(VISIBILITY_WORDS, visKm)}</div>` : ''}
-        `);
-    };
-
+    // Only at "moderate" or above, like the hour popup
     const dayThunderTile = (d, agg) => {
-        const code = dailyValue('weather_code', d);
-        const capeMax = agg && agg.cape ? agg.cape.max : null;
-        const level = thunderRisk(capeMax, null, code);
-        if (level == null) return '';
-        const times = lastRender.data.hourly.time;
-        const at = agg && agg.cape && agg.cape.hourIndex >= 0 ? times[agg.cape.hourIndex] : null;
-
-        return tileHtml(TXT.detail.thunder, `
-            <div class="tile-value-row"><span class="t-value">${TXT.detail.thunderLevels[level]}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.day.maxCape}</span><span class="t-cap-emph">${fmtOr(capeMax, 0, ' J/kg')}</span></div>
-            ${at ? `<div class="tile-row"><span class="t-cap">${TXT.day.atHour}</span><span class="t-cap-emph">${formatHour(at)}</span></div>` : ''}
-        `, TXT.detail.estimated);
+        const level = thunderRisk(agg ? agg.capeMax : null, null, dailyValue('weather_code', d));
+        if (level !== 'moderate' && level !== 'high') return '';
+        return tileHtml(TXT.detail.thunder, valueRowHtml(TXT.detail.thunderLevels[level]), TXT.detail.estimated);
     };
 
-    const daySnowTile = (d, agg) => {
-        const snowSum = dailyValue('snowfall_sum', d);
-        const minTemp = dailyValue('temperature_2m_min', d);
-        const depthMax = agg ? agg.snowDepthMax : null;
-        const freezingMin = agg ? agg.freezingLevelMin : null;
-
-        const relevant = (snowSum != null && snowSum > 0)
-            || (depthMax != null && depthMax > 0)
-            || (minTemp != null && minTemp <= SNOW_TILE_MAX_TEMP);
-        if (!relevant) return '';
-        if (snowSum == null && depthMax == null && freezingMin == null) return '';
-
-        return tileHtml(TXT.detail.snowTitle, `
-            ${snowSum != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.snowfallSum}</span><span class="t-cap-emph">${fmtOr(snowSum, 1, ' cm')}</span></div>` : ''}
-            ${depthMax != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.maxSnowDepth}</span><span class="t-cap-emph">${fmtOr(depthMax * 100, 1, ' cm')}</span></div>` : ''}
-            ${freezingMin != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.minFreezingLevel}</span><span class="t-cap-emph">${fmtOr(freezingMin, 0, ' m')}</span></div>` : ''}
-        `);
+    const daySnowTile = (d) => {
+        const snowSum = dailyValue('snowfall_sum', d);   // cm
+        if (snowSum == null || snowSum <= 0) return '';
+        return tileHtml(TXT.detail.snow, valueRowHtml(fmtOr(snowSum, 1), 'cm'));
     };
 
     // Shown once real ensemble stats exist for this day; a subtle skeleton
@@ -2309,43 +2045,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return tileHtml(TXT.day.confidenceTile.title, `
                 <div class="confidence-skeleton-line" style="width: 40%;"></div>
                 <div class="confidence-skeleton-line" style="width: 85%;"></div>
-                <div class="confidence-skeleton-line" style="width: 60%;"></div>
-            `);
+            `, null, 'wide');
         }
 
         const level = stats.spread <= ENSEMBLE_SPREAD_HIGH_C ? 'high'
             : stats.spread <= ENSEMBLE_SPREAD_MEDIUM_C ? 'medium' : 'low';
 
         return tileHtml(TXT.day.confidenceTile.title, `
-            <div class="tile-value-row"><span class="t-value confidence-${level}">${TXT.detail.confidenceLevels[level]}</span></div>
-            <div class="t-body">${TXT.day.confidenceTile.range(stats.members, Math.round(stats.p10), Math.round(stats.p90), Math.round(stats.median))}</div>
-            <div class="t-cap">${stats.model}</div>
-            <div class="t-cap tile-foot">${TXT.day.confidenceTile.explain}</div>
-        `);
-    };
-
-    // One line comparing this day's high with the neighbouring day
-    const dayComparisonHtml = (d) => {
-        const C = TXT.day.compare;
-        const here = dailyValue('temperature_2m_max', d);
-        if (here == null) return '';
-
-        const otherIndex = d === 0 ? 1 : d - 1;
-        const other = dailyValue('temperature_2m_max', otherIndex);
-        if (other == null) return '';
-
-        if (d === 0) {
-            const delta = Math.round(other - here);   // how tomorrow differs from today
-            const text = Math.abs(delta) <= DAY_COMPARE_SAME_C ? C.tomorrowSame
-                : delta > 0 ? C.tomorrowWarmer(delta) : C.tomorrowCooler(Math.abs(delta));
-            return `<div class="day-compare t-cap">${text}</div>`;
-        }
-
-        const delta = Math.round(here - other);
-        const ref = d === 1 ? C.refToday : C.refPrevDay;
-        const text = Math.abs(delta) <= DAY_COMPARE_SAME_C ? C.same(ref)
-            : delta > 0 ? C.warmer(delta, ref) : C.cooler(Math.abs(delta), ref);
-        return `<div class="day-compare t-cap">${text}</div>`;
+            ${valueRowHtml(`<span class="confidence-${level}">${TXT.detail.confidenceLevels[level]}</span>`)}
+            <div class="t-cap">${TXT.day.confidenceTile.range(Math.round(stats.p10), Math.round(stats.p90))}</div>
+        `, null, 'wide');
     };
 
     /* ---------- day air quality + pollen ---------- */
@@ -2360,8 +2069,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const band = aqiBandFor(aq.max);
         const markerPct = Math.max(0, Math.min(100, aq.max / AQI_SCALE_MAX * 100));
-        const times = lastRender.data.hourly.time;
-        const pm25 = agg.pm25;
 
         return `<section class="detail-section">
             <div class="t-cap-heading">${TXT.detail.airQuality}</div>
@@ -2374,33 +2081,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${AQI_BANDS.map((b) => `<span class="aq-scale-band" style="background: ${b.color};"></span>`).join('')}
                 <span class="aq-marker" style="left: ${markerPct.toFixed(1)}%;"></span>
             </div>
-            ${aq.hourIndex >= 0 ? `<div class="tile-row"><span class="t-cap">${TXT.day.atHour}</span><span class="t-cap-emph">${formatHour(times[aq.hourIndex])}</span></div>` : ''}
-            ${aq.leading ? `<div class="tile-row"><span class="t-cap">${TXT.detail.leadingPollutant}</span><span class="t-cap-emph">${TXT.detail.pollutants[aq.leading]}</span></div>` : ''}
-            ${pm25 ? `<div class="tile-row"><span class="t-cap">${TXT.day.pm25Range}</span><span class="t-cap-emph">${fmtOr(pm25.min, 1)}–${fmtOr(pm25.max, 1)} µg/m³</span></div>` : ''}
         </section>`;
     };
 
+    // Each species' peak for the day, only those above "Low"
     const dayPollenSection = (d, agg) => {
         if (!agg) return '';
-        const keys = Object.keys(agg.pollen);
-        if (!keys.length) return '';   // day sits outside the pollen forecast range
-
-        const times = lastRender.data.hourly.time;
-        const active = keys.filter((k) => agg.pollen[k].value > 0);
-        const body = active.length
-            ? active.map((k) => {
-                const p = agg.pollen[k];
-                return `<div class="pollen-row">
-                    <span class="t-body pollen-name">${TXT.detail.pollenSpecies[k]}</span>
-                    ${miniBarHtml(Math.max(2, p.value / POLLEN_BAR_FULL * 100), 'var(--accent)')}
-                    <span class="t-cap pollen-value">${fmtOr(p.value, 1)} · ${wordFor(POLLEN_LEVELS, p.value)}${p.hourIndex >= 0 ? ` · ${formatHour(times[p.hourIndex])}` : ''}</span>
-                </div>`;
-            }).join('')
-            : `<div class="t-cap section-muted">${TXT.detail.noPollen}</div>`;
+        const notable = Object.keys(agg.pollen).filter((k) => agg.pollen[k].value >= POLLEN_NOTABLE_FROM);
+        if (!notable.length) return '';
 
         return `<section class="detail-section">
             <div class="t-cap-heading">${TXT.detail.pollen} <span class="tile-note">${TXT.day.pollenPeak}</span></div>
-            ${body}
+            ${notable.map((k) => `<div class="pollen-row">
+                <span class="t-body pollen-name">${TXT.detail.pollenSpecies[k]}</span>
+                ${miniBarHtml(agg.pollen[k].value / POLLEN_BAR_FULL * 100, 'var(--accent)')}
+                <span class="t-cap pollen-value">${wordFor(POLLEN_LEVELS, agg.pollen[k].value)}</span>
+            </div>`).join('')}
         </section>`;
     };
 
@@ -2417,7 +2113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailNextBtn = document.getElementById('detail-next');
     const detailCloseBtn = document.getElementById('detail-close');
     const detailTitleEl = document.getElementById('detail-title');
-    const detailSubtitleEl = document.getElementById('detail-subtitle');
     const detailBodyEl = document.getElementById('detail-body');
 
     detailBackBtn.querySelector('span').textContent = TXT.back;
@@ -2454,7 +2149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDay = hourlyValue('is_day', i) === 1;
         const hasCams = aqAt(i) != null;   // same per-hour CAMS row backs both AQ and pollen
 
-        const tiles = [
+        const tiles = compactTilesHtml([
             precipitationTile(i),
             windTile(i),
             humidityTile(i),
@@ -2462,7 +2157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             visibilityTile(i),
             thunderTile(i),
             snowTile(i),
-        ].join('');
+        ]);
 
         bodyEl.innerHTML = `
             <div class="detail-cols">
@@ -2527,7 +2222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const lo = dailyValue('temperature_2m_min', d);
         const feelsHi = dailyValue('apparent_temperature_max', d);
         const feelsLo = dailyValue('apparent_temperature_min', d);
-        const confidence = confidenceForDay(d);
 
         // Today highlights (and scrolls to) the live hour; other days open at sunrise
         const hourly = lastRender.data.hourly;
@@ -2540,19 +2234,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 : indices[0];
         }
 
-        const tiles = [
+        const tiles = compactTilesHtml([
             dayPrecipitationTile(d, agg),
-            dayWindTile(d, agg),
-            daySunTile(d),
+            dayWindTile(d),
             dayUvTile(d, agg),
-            dayMoonTile(d),
-            dayHumidityTile(d, agg),
-            dayPressureTile(d, agg),
-            dayCloudsTile(d, agg),
             dayThunderTile(d, agg),
-            daySnowTile(d, agg),
+            daySnowTile(d),
+            daySunTile(d),
             dayConfidenceTile(d),
-        ].join('');
+        ]);
 
         const feelsText = (feelsHi != null && feelsLo != null)
             ? `${TXT.detail.feelsLike} ${Math.round(feelsLo)}° / ${Math.round(feelsHi)}°`
@@ -2575,9 +2265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${feelsText ? `<div class="t-cap">${feelsText}</div>` : ''}
                         </div>
                     </div>
-                    ${dayComparisonHtml(d)}
                     <div class="day-summary t-body">${daySummary(d, agg)}</div>
-                    ${confidenceBadgeHtml(confidence, d)}
                     <div class="detail-chart-host"></div>
                     ${indices.length ? `
                         <div class="day-hour-block">
@@ -2586,7 +2274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>` : ''}
                 </div>
                 <div class="detail-col-side">
-                    <div class="detail-tiles">${tiles}</div>
+                    <div class="detail-tiles detail-tiles--compact">${tiles}</div>
                     ${dayAirQualitySection(d, agg)}
                     ${dayPollenSection(d, agg)}
                 </div>
@@ -2630,7 +2318,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const weekday = getDayName(dateStr, detailState.dayIndex);
             detailTitleEl.textContent = `${weekday}, ${formatMonthDay(dateStr)} · ${formatHour(iso)}`
                 + (isNow ? ` · ${TXT.now}` : '');
-            detailSubtitleEl.textContent = '';   // the hero already names the condition
             detailPrevBtn.disabled = i <= 0;
             detailNextBtn.disabled = i >= hourly.time.length - 1;
             renderHourDetail(i, detailBodyEl);
@@ -2638,7 +2325,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const i = detailState.dayIndex;
             const weekday = getDayName(daily.time[i], i);
             detailTitleEl.textContent = `${weekday}, ${formatMonthDay(daily.time[i])}`;
-            detailSubtitleEl.textContent = getWeatherCondition(daily.weather_code[i]);
             detailPrevBtn.disabled = i <= 0;
             detailNextBtn.disabled = i >= daily.time.length - 1;
             renderDayDetail(i, detailBodyEl);
