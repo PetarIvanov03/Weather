@@ -1,5 +1,10 @@
 # === Claude & AI Tools ===
-.claude/
+# Shared project config (skills, permissions, launch) is committed;
+# everything else under .claude/ (local settings, sessions) stays private.
+.claude/*
+!.claude/skills/
+!.claude/settings.json
+!.claude/launch.json
 .anthropic/
 claude-session.json
 *.log

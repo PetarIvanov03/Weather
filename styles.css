@@ -5,6 +5,40 @@
    a legibility shadow; light/dark is driven by the background
    image's day/night, exposed as [data-bg-dark] on <html>.
    ========================================================= */
+
+/* ---------- Base reset ----------
+   The subset of Tailwind v3.4 Preflight (MIT, https://tailwindcss.com) this
+   page relies on. It used to come from the Tailwind Play CDN script, which
+   was otherwise unused; inlined so the layout stays pixel-identical without
+   the render-blocking script. Must stay first so every rule below wins. */
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    -webkit-tap-highlight-color: transparent;
+}
+body { margin: 0; line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+a { color: inherit; text-decoration: inherit; }
+b, strong { font-weight: bolder; }
+button, input, select, textarea {
+    font-family: inherit; font-feature-settings: inherit; font-variation-settings: inherit;
+    font-size: 100%; font-weight: inherit; line-height: inherit; letter-spacing: inherit;
+    color: inherit; margin: 0; padding: 0;
+}
+button, select { text-transform: none; }
+button { -webkit-appearance: button; background-color: transparent; background-image: none; }
+blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre { margin: 0; }
+menu, ol, ul { list-style: none; margin: 0; padding: 0; }
+input::placeholder, textarea::placeholder { opacity: 1; color: #9ca3af; }
+[role="button"], button { cursor: pointer; }
+:disabled { cursor: default; }
+img, svg, video, canvas { display: block; vertical-align: middle; }
+img, video { max-width: 100%; height: auto; }
+[hidden]:where(:not([hidden="until-found"])) { display: none; }
+
 @property --card {
     syntax: '<color>';
     inherits: true;

@@ -22,6 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
         now: 'Now',
         high: 'H',
         low: 'L',
+        max: 'Max',
+        uv: 'UV',
+        compass: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+        yourLocation: 'Your Location',
+        dayRowLabel: (day, cond, hi, lo) => `${day}, ${cond}, high ${hi}°, low ${lo}°`,
+        // An en-dash between negatives ("-8–-1") is unreadable, so those spell it out
+        tempRange: (lo, hi) => (lo < 0 || hi < 0) ? `${lo}° to ${hi}°` : `${lo}–${hi}°`,
+        chartAria: (tab, series, min, max, from, to) => `${tab}. ${series} ${min} to ${max}, ${from} to ${to}`,
         uvLevels: ['Low', 'Moderate', 'High', 'Very High', 'Extreme'],
         loadingLocate: 'Locating you…',
         loadingFetch: 'Fetching weather data…',
@@ -172,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Forecast confidence',
                 range: (n, p10, p90, median) => `Temperature range across ${n} forecasts: ${p10}–${p90}° (median ${median}°)`,
                 explain: 'A wider range means less certainty.',
+                model: 'ECMWF IFS (51 members)',
             },
             compare: {
                 warmer: (n, ref) => `${n}° warmer than ${ref}`,
@@ -200,6 +209,20 @@ document.addEventListener('DOMContentLoaded', () => {
             cloudHigh: 'High',
             uv: 'UV',
             uvClearSky: 'Clear sky',
+        },
+        // Words for the [upper bound, word] tables; the bounds themselves live
+        // with the other thresholds in "Detail popup content" / "Day popup"
+        words: {
+            wind: { calm: 'Calm', light: 'Light', moderate: 'Moderate', fresh: 'Fresh', strong: 'Strong', veryStrong: 'Very strong' },
+            dewPoint: { dry: 'Dry', comfortable: 'Comfortable', humid: 'Humid', oppressive: 'Oppressive' },
+            visibility: { veryPoor: 'Very poor', poor: 'Poor', moderate: 'Moderate', good: 'Good' },
+            haze: { clear: 'Clear', light: 'Light haze', hazy: 'Hazy' },
+            pollen: { low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high' },
+            aqi: { good: 'Good', fair: 'Fair', moderate: 'Moderate', poor: 'Poor', veryPoor: 'Very poor', extremelyPoor: 'Extremely poor' },
+            moon: {
+                newMoon: 'New moon', waxingCrescent: 'Waxing crescent', firstQuarter: 'First quarter', waxingGibbous: 'Waxing gibbous',
+                fullMoon: 'Full moon', waningGibbous: 'Waning gibbous', lastQuarter: 'Last quarter', waningCrescent: 'Waning crescent',
+            },
         },
     };
 
@@ -419,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getUvLabel = (uv) => TXT.uvLevels[getUvLevel(uv)];
     // Round to the nearest integer, but never report a non-zero UV as "0"
     const formatUv = (uv) => (uv > 0 && Math.round(uv) === 0) ? '<1' : String(Math.round(uv));
-    const getCompass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
+    const getCompass = (deg) => TXT.compass[Math.round(deg / 45) % 8];
 
     const formatHour = (iso) => iso.slice(11, 13) + ':00';        // "15:00"
     const formatClock = (iso) => iso.slice(11, 16);                // "06:12"
@@ -587,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="t-cap-accent">${precip}%</span>
                     </div>
                     <div class="t-cap">${Math.round(hourly.wind_speed_10m[i])} ${TXT.kmh}</div>
-                    <div class="t-cap-emph">UV ${Math.round(hourly.uv_index[i])}</div>
+                    <div class="t-cap-emph">${TXT.uv} ${Math.round(hourly.uv_index[i])}</div>
                 </div>
             `;
         }
@@ -637,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxTemp = Math.round(daily.temperature_2m_max[i]);
             const left = ((daily.temperature_2m_min[i] - weekLo) / span * 100).toFixed(0);
             const width = ((daily.temperature_2m_max[i] - daily.temperature_2m_min[i]) / span * 100).toFixed(0);
-            const ariaLabel = `${dayName}, ${getWeatherCondition(daily.weather_code[i])}, high ${maxTemp}°, low ${minTemp}°`;
+            const ariaLabel = TXT.dayRowLabel(dayName, getWeatherCondition(daily.weather_code[i]), maxTemp, minTemp);
 
             html += `
                 <div class="day-row" data-day-index="${i}" role="button" tabindex="0" aria-label="${ariaLabel}">
@@ -687,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uiUv.textContent = uvNow != null ? formatUv(uvNow) : '--';
         uiUvLabel.textContent = uvNow == null ? ''
-            : uvMax != null ? `${getUvLabel(uvNow)} · Max ${Math.round(uvMax)}`
+            : uvMax != null ? `${getUvLabel(uvNow)} · ${TXT.max} ${Math.round(uvMax)}`
             : getUvLabel(uvNow);
         const uvPct = uvNow != null ? Math.min(100, uvNow / 11 * 100) : 0;
         uiUvBar.style.width = `${uvPct}%`;
@@ -793,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // HTTP 200, 51 members (temperature_2m + _member01..50), full hourly
     // (not 3-/6-hourly) coverage, and honours forecast_days=14 (336 rows).
     const ENSEMBLE_MODEL_ID = 'ecmwf_ifs025';
-    const ENSEMBLE_MODEL_LABEL = 'ECMWF IFS (51 members)';
+    const ENSEMBLE_MODEL_LABEL = TXT.day.confidenceTile.model;
 
     const ensembleUrl = (lat, lon) => 'https://ensemble-api.open-meteo.com/v1/ensemble'
         + `?latitude=${lat}&longitude=${lon}`
@@ -1364,9 +1387,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const main = visible[0];
             const mainNums = main.vals.filter((v) => v != null);
-            const ariaLabel = `${tab.label}. ${main.s.label} `
-                + `${fmtSeriesValue(Math.min.apply(null, mainNums), main.s)} to ${fmtSeriesValue(Math.max.apply(null, mainNums), main.s)}, `
-                + `${formatHour(hourly.time[indices[0]])} to ${formatHour(hourly.time[indices[n - 1]])}`;
+            const ariaLabel = TXT.chartAria(tab.label, main.s.label,
+                fmtSeriesValue(Math.min.apply(null, mainNums), main.s), fmtSeriesValue(Math.max.apply(null, mainNums), main.s),
+                formatHour(hourly.time[indices[0]]), formatHour(hourly.time[indices[n - 1]]));
 
             plotEl.innerHTML = `<svg class="chart-svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${ariaLabel}">${parts.join('')}</svg><div class="chart-tooltip" role="presentation"></div>`;
 
@@ -1505,10 +1528,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const ENSEMBLE_SPREAD_MEDIUM_C = 4;
 
     // [upper bound (exclusive), word] — the last entry is the catch-all
-    const WIND_WORDS = [[2, 'Calm'], [12, 'Light'], [20, 'Moderate'], [29, 'Fresh'], [39, 'Strong'], [Infinity, 'Very strong']];
-    const DEW_POINT_WORDS = [[10, 'Dry'], [16, 'Comfortable'], [21, 'Humid'], [Infinity, 'Oppressive']];
-    const VISIBILITY_WORDS = [[1, 'Very poor'], [4, 'Poor'], [10, 'Moderate'], [Infinity, 'Good']];  // km
-    const HAZE_WORDS = [[0.1, 'Clear'], [0.3, 'Light haze'], [Infinity, 'Hazy']];                    // aerosol optical depth
+    // Words come from TXT.words so all copy stays in one place
+    const W = TXT.words;
+    const WIND_WORDS = [[2, W.wind.calm], [12, W.wind.light], [20, W.wind.moderate], [29, W.wind.fresh], [39, W.wind.strong], [Infinity, W.wind.veryStrong]];
+    const DEW_POINT_WORDS = [[10, W.dewPoint.dry], [16, W.dewPoint.comfortable], [21, W.dewPoint.humid], [Infinity, W.dewPoint.oppressive]];
+    const VISIBILITY_WORDS = [[1, W.visibility.veryPoor], [4, W.visibility.poor], [10, W.visibility.moderate], [Infinity, W.visibility.good]];  // km
+    const HAZE_WORDS = [[0.1, W.haze.clear], [0.3, W.haze.light], [Infinity, W.haze.hazy]];                    // aerosol optical depth
 
     const PRESSURE_STEADY_HPA = 1;    // ±1 hPa over 3 h still reads as steady
     const PRESSURE_TREND_HOURS = 3;
@@ -1518,17 +1543,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Approximate pollen scale (grains/m³). Open-Meteo publishes no official
     // band table for these, so these are widely-used rough thresholds —
     // indicative only, tune freely.
-    const POLLEN_LEVELS = [[10, 'Low'], [50, 'Moderate'], [200, 'High'], [Infinity, 'Very high']];
+    const POLLEN_LEVELS = [[10, W.pollen.low], [50, W.pollen.moderate], [200, W.pollen.high], [Infinity, W.pollen.veryHigh]];
     const POLLEN_BAR_FULL = 200;      // grains/m³ that fills the level bar
 
     // European AQI bands and their official colours
     const AQI_BANDS = [
-        { max: 20,       name: 'Good',            color: '#50f0e6' },
-        { max: 40,       name: 'Fair',            color: '#50ccaa' },
-        { max: 60,       name: 'Moderate',        color: '#f0e641' },
-        { max: 80,       name: 'Poor',            color: '#ff5050' },
-        { max: 100,      name: 'Very poor',       color: '#960032' },
-        { max: Infinity, name: 'Extremely poor',  color: '#7d2181' },
+        { max: 20,       name: W.aqi.good,          color: '#50f0e6' },
+        { max: 40,       name: W.aqi.fair,          color: '#50ccaa' },
+        { max: 60,       name: W.aqi.moderate,      color: '#f0e641' },
+        { max: 80,       name: W.aqi.poor,          color: '#ff5050' },
+        { max: 100,      name: W.aqi.veryPoor,      color: '#960032' },
+        { max: Infinity, name: W.aqi.extremelyPoor, color: '#7d2181' },
     ];
     const AQI_SCALE_MAX = 120;        // the open-ended top band is clipped here on the bar
     const AQI_SUB_INDEX_KEYS = ['pm2_5', 'pm10', 'ozone', 'nitrogen_dioxide', 'sulphur_dioxide'];
@@ -1963,9 +1988,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // live as 0–1 (unit "fraction"): 0/1 = new, 0.25 = first quarter,
     // 0.5 = full, 0.75 = last quarter. Bands below are centred on those.
     const MOON_PHASE_NAMES = [
-        [0.0625, 'New moon'], [0.1875, 'Waxing crescent'], [0.3125, 'First quarter'],
-        [0.4375, 'Waxing gibbous'], [0.5625, 'Full moon'], [0.6875, 'Waning gibbous'],
-        [0.8125, 'Last quarter'], [0.9375, 'Waning crescent'], [Infinity, 'New moon'],
+        [0.0625, W.moon.newMoon], [0.1875, W.moon.waxingCrescent], [0.3125, W.moon.firstQuarter],
+        [0.4375, W.moon.waxingGibbous], [0.5625, W.moon.fullMoon], [0.6875, W.moon.waningGibbous],
+        [0.8125, W.moon.lastQuarter], [0.9375, W.moon.waningCrescent], [Infinity, W.moon.newMoon],
     ];
 
     /* ---------- daily accessors ---------- */
@@ -1984,10 +2009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return (typeof v === 'string' && v) ? v : null;
     };
 
-    // An en-dash between negatives ("-8–-1") is unreadable, so those spell it out
-    const formatTempRange = (lo, hi) => (lo < 0 || hi < 0)
-        ? `${lo}° to ${hi}°`
-        : `${lo}–${hi}°`;
+    const formatTempRange = TXT.tempRange;
 
     // "14:00–18:00", or just "14:00" when the window is a single hour
     const formatHourRange = (fromIndex, toIndex) => {
@@ -3175,16 +3197,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const reverseGeocode = async (lat, lon) => {
         try {
             const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-            if (!response.ok) return { name: 'Your Location', country: '', country_code: '' };
+            if (!response.ok) return { name: TXT.yourLocation, country: '', country_code: '' };
             const data = await response.json();
             return {
-                name: data.city || data.locality || 'Your Location',
+                name: data.city || data.locality || TXT.yourLocation,
                 country: data.countryName || '',
                 country_code: data.countryCode || '',
             };
         } catch (error) {
             console.error('Reverse geocoding error:', error);
-            return { name: 'Your Location', country: '', country_code: '' };
+            return { name: TXT.yourLocation, country: '', country_code: '' };
         }
     };
 

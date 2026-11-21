@@ -3,7 +3,7 @@
 Single-page weather app. Search any city with autocomplete or use your current location to see live conditions, an hourly rail, and a 14-day forecast. Powered by the free [Open-Meteo](https://open-meteo.com/) API — no API key, no backend, no build step.
 
 ![JavaScript](https://img.shields.io/badge/Vanilla-JavaScript-F7DF1E)
-![Tailwind](https://img.shields.io/badge/Tailwind-CDN-06B6D4)
+![CSS](https://img.shields.io/badge/Hand--written-CSS-264DE4)
 ![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8)
 ![Pages](https://img.shields.io/badge/Deploy-GitHub_Pages-222222)
 
@@ -30,7 +30,7 @@ CNAME          custom domain for GitHub Pages
 ## Design decisions
 
 **1. No framework and no build step**
-Plain HTML, vanilla JS, and Tailwind via CDN. The app is one page with a handful of components and no shared state beyond the current forecast — a framework would add a build pipeline and a dependency tree for no behaviour that isn't already straightforward here. The cost is manual DOM updates and no type checking; at a larger scope that trade flips.
+Plain HTML, vanilla JS, and hand-written CSS (with a small inlined reset) — no CSS framework, no third-party scripts. The app is one page with a handful of components and no shared state beyond the current forecast — a framework would add a build pipeline and a dependency tree for no behaviour that isn't already straightforward here. The cost is manual DOM updates and no type checking; at a larger scope that trade flips.
 
 **2. Fully client-side, because the API needs no key**
 Open-Meteo requires no authentication, so there is nothing to hide and no reason for a backend. That makes the whole app a static deploy on GitHub Pages with no server to run, no secrets to manage, and no cold starts. A keyed weather API would have forced a proxy layer purely to keep the key off the client.
@@ -57,8 +57,8 @@ The hourly rail uses CSS scroll snap, which only lands cleanly if the container 
 - **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, sunrise and sunset
 - **Hour/day detail popups** — tap an hour or a day for a chart plus a full tile grid: precipitation, wind, humidity, pressure, clouds, visibility, UV, thunderstorm risk, snow, air quality, pollen, and a forecast-confidence rating — see [Detail popups](#detail-popups)
 - **Search autocomplete** — debounced, up to 8 disambiguated matches (`name, region, country`) so same-named cities like Dimitrovgrad in Bulgaria and in Russia are both reachable; full keyboard support (↑/↓, Enter, Esc) with `aria-activedescendant` tracking the highlighted option
-- **Geolocation on load** — with reverse geocoding for the place name, falling back to search if denied
 - **Last location remembered** — the most recent result is saved to `localStorage` and restored on the next visit
+- **Geolocation** — on a first visit (no saved location) or via the locate button, with reverse geocoding for the place name, falling back to search if denied
 - **Auto-refresh on return** — if the tab regains focus more than 10 minutes after the last fetch, the app silently re-fetches in the background; the header clock ticks forward once a minute between fetches so the local time never sits frozen
 - **State screens** — designed loading, error with retry, and location-not-found states
 - **Responsive** — stacked on mobile, 70/30 split (weather panel / 14-day column) from 768px up
@@ -121,7 +121,7 @@ Then open <http://localhost:8000>.
 - **iOS Safari** — text inputs are forced to a 16px computed font size on touch viewports, with compensating line-height, to prevent Safari's zoom-on-focus
 - **Safe areas** — the viewport meta tag sets `viewport-fit=cover` so `env(safe-area-inset-*)` resolves to real values (without it Safari clamps every inset to 0); the detail popup's bottom sheet uses it for the home-indicator area and, in landscape, the left/right notch
 - **Stacking** — the search row is `z-30` because the `animate-fade-in` sections create their own stacking contexts; without it the autocomplete dropdown paints beneath the weather card
-- **Localisation** — English only; all strings live in a single `TXT` object in `app.js`
+- **Localisation** — English only; all strings live in a single `TXT` object in `app.js` (descriptive word scales under `TXT.words`, their numeric bounds next to the other thresholds)
 
 ## Known limitations
 
