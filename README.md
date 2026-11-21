@@ -52,7 +52,7 @@ The hourly rail uses CSS scroll snap, which only lands cleanly if the container 
 ## Features
 
 - **Current conditions** — temperature, condition, feels-like, today's high and low
-- **Hourly rail** — next 24 hours with icon, temperature, precipitation probability, wind, and UV index; horizontally scrollable with snap
+- **Hourly rail** — next 24 hours with icon, temperature, precipitation probability, wind, and UV index; horizontally scrollable with snap, the ‹ › chevrons scroll one screenful, and a thin line under the cards shows the scroll position
 - **14-day forecast** — day, icon, precipitation %, and low/high with a range bar scaled to the forecast's global min and max
 - **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, sunrise and sunset
 - **Hour/day detail popups** — tap an hour or a day for a chart plus a full tile grid: precipitation, wind, humidity, pressure, clouds, visibility, UV, thunderstorm risk, snow, air quality, pollen, and a forecast-confidence rating — see [Detail popups](#detail-popups)

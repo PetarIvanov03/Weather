@@ -542,6 +542,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: false });
 
+    // Chevrons scroll one visible "page"; the progress line shows where we are
+    const railBack = document.getElementById('rail-back');
+    const railForward = document.getElementById('rail-forward');
+    const railThumb = document.getElementById('rail-progress-thumb');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const updateRailControls = () => {
+        const max = rail.scrollWidth - rail.clientWidth;
+        railBack.disabled = rail.scrollLeft <= 1;
+        railForward.disabled = rail.scrollLeft >= max - 1;
+
+        const visiblePct = rail.scrollWidth ? rail.clientWidth / rail.scrollWidth * 100 : 100;
+        const progress = max > 0 ? rail.scrollLeft / max : 0;
+        railThumb.style.width = `${visiblePct}%`;
+        railThumb.style.left = `${progress * (100 - visiblePct)}%`;
+    };
+
+    const scrollRailBy = (direction) => {
+        rail.scrollBy({ left: direction * rail.clientWidth, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    };
+    railBack.addEventListener('click', () => scrollRailBy(-1));
+    railForward.addEventListener('click', () => scrollRailBy(1));
+    rail.addEventListener('scroll', updateRailControls, { passive: true });
+    new ResizeObserver(updateRailControls).observe(rail);
+
     /* =====================================================================
        State screens
        ===================================================================== */
@@ -616,6 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         rail.innerHTML = html;
         rail.scrollLeft = 0;
+        updateRailControls();
         updateRailWidth();
     };
 

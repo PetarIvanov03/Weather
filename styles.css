@@ -294,14 +294,35 @@ main {
 }
 .rail-chevron {
     position: absolute; top: 50%; width: 14px; text-align: center; transform: translateY(-50%);
-    pointer-events: none; font-size: 31px; line-height: 1; font-weight:400;
+    font-size: 31px; line-height: 1; font-weight:400;
     -webkit-text-stroke: 0.6px currentColor; color: #fff; opacity: 0.4; z-index: 2;
+    transition: opacity 150ms ease;
 }
+.rail-chevron--back { left: 0; }
+.rail-chevron--forward { right: 0; }
+/* Invisible hit area: taller than the glyph and reaching a little over the card edge */
+.rail-chevron::before { content: ''; position: absolute; top: -10px; bottom: -10px; }
+.rail-chevron--back::before { left: 0; right: -12px; }
+.rail-chevron--forward::before { left: -12px; right: 0; }
+.rail-chevron:disabled { opacity: 0.12; }
+@media (hover: hover) { .rail-chevron:not(:disabled):hover { opacity: 0.7; } }
+@media (prefers-reduced-motion: reduce) { .rail-chevron { transition: none; } }
+
+/* Scroll position line under the cards (decorative) */
+.rail-progress {
+    position: absolute; left: 14px; right: 14px; bottom: 0; height: 4px;
+    border-radius: 999px; background: rgba(255, 255, 255, 0.12); overflow: hidden;
+}
+.rail-progress-thumb {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 100%;
+    border-radius: 999px; background: rgba(255, 255, 255, 0.5);
+}
+@media (min-width: 768px) { .rail-progress { left: 20px; right: 20px; bottom: 5px; } }
 .rail {
     display: flex; gap: 8px; width: 100%; overflow-x: auto;
     scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding: 4px 0 6px;
+    padding: 4px 0 12px;   /* bottom room for .rail-progress */
 }
 @media (min-width: 768px) { .rail { gap: 10px; padding: 6px 0 16px; align-items: flex-start; } }
 .rail::-webkit-scrollbar { display: none; }
