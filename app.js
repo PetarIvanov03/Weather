@@ -131,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             maxChance: 'Max chance',
             maxGust: 'Max gust',
             meanWind: 'Mean',
-            dominant: 'Dominant',
             sun: 'Sun',
             sunrise: 'Sunrise',
             sunset: 'Sunset',
@@ -468,7 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const uiFeels = document.getElementById('weather-feels');
     const uiWind = document.getElementById('weather-wind');
     const uiWindDir = document.getElementById('wind-dir');
-    const uiWindArrow = document.getElementById('wind-arrow');
     const uiHumidity = document.getElementById('weather-humidity');
     const uiDewPoint = document.getElementById('dew-point');
     const uiUv = document.getElementById('weather-uv');
@@ -711,7 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uiWind.textContent = Math.round(current.wind_speed_10m);
         uiWindDir.textContent = getCompass(current.wind_direction_10m);
-        uiWindArrow.style.transform = `rotate(${Math.round(current.wind_direction_10m)}deg)`;
 
         uiHumidity.textContent = Math.round(current.relative_humidity_2m);
         uiDewPoint.textContent = Math.round(current.dew_point_2m);
@@ -1011,7 +1008,6 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'wind', label: TXT.chartTabs.wind,
             left: { unit: KMH, min: 0, minSpan: 10, pad: 0.12 },
-            arrows: 'wind_direction_10m',
             series: [
                 { key: 'wind_speed_10m', type: 'line', color: 'main', unit: KMH, label: TXT.chartSeries.wind },
                 { key: 'wind_gusts_10m', type: 'line', dash: '6 4', color: 'alt', unit: KMH, label: TXT.chartSeries.gusts },
@@ -1233,8 +1229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const padL = 38;
             const padR = axisR ? 42 : 14;
             const padT = 12;
-            const arrowsH = tab.arrows && hourly[tab.arrows] ? 18 : 0;
-            const padB = 26 + arrowsH;
+            const padB = 26;
             const plotW = w - padL - padR;
             const plotH = h - padT - padB;
             if (plotW < 40 || plotH < 40) { showEmpty(); return; }
@@ -1336,20 +1331,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-
-            // Wind direction arrows (meteorological: points the way the wind
-            // comes from, matching the hero card's arrow convention)
-            if (arrowsH) {
-                const dirs = hourly[tab.arrows];
-                const ay = baseY + 15 + 12;
-                for (let p = 0; p < n; p++) {
-                    if (parseInt(hourly.time[indices[p]].slice(11, 13), 10) % 3 !== 0) continue;
-                    const dir = dirs[indices[p]];
-                    if (dir == null) continue;
-                    const x = Math.max(padL + 6, Math.min(padL + plotW - 6, xAt(p)));
-                    parts.push(`<path d="M0 -4.5 L3 4 L0 1.8 L-3 4 Z" fill="${palette.main}" fill-opacity="0.75" transform="translate(${x.toFixed(1)} ${ay.toFixed(1)}) rotate(${Math.round(dir)})"></path>`);
-                }
-            }
 
             // Highlighted hour
             const hp = highlightIndex != null ? indices.indexOf(highlightIndex) : -1;
@@ -1671,12 +1652,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     `;
 
-    const windArrowHtml = (deg, size) => `
-        <svg width="${size}" height="${size}" viewBox="0 0 30 30" aria-hidden="true" style="transform: rotate(${Math.round(deg)}deg);">
-            <circle cx="15" cy="15" r="13" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"></circle>
-            <path d="M15 6L20 18H10Z" fill="#f7f5f0"></path>
-        </svg>
-    `;
+    // Wind direction is plain text: the compass point it blows from ("NW")
+    const windFromHtml = (deg) => `<span class="t-cap">${getCompass(deg)}</span>`;
 
     // Same gradient + reveal trick as the main screen's UV bar
     const uvBarHtml = (uv) => {
@@ -1737,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (speed == null && gusts == null) return '';
 
         return tileHtml(TXT.detail.wind, `
-            ${valueRowHtml(fmtOr(speed, 0), TXT.kmh, dir != null ? windArrowHtml(dir, 22) : '')}
+            ${valueRowHtml(fmtOr(speed, 0), TXT.kmh, dir != null ? windFromHtml(dir) : '')}
             ${gusts != null ? `<div class="t-cap">${TXT.detail.gusts} ${fmtOr(gusts, 0, ' ' + TXT.kmh)}</div>` : ''}
         `);
     };
@@ -2181,10 +2158,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return tileHtml(TXT.detail.wind, `
             <div class="tile-value-row">
                 <span class="t-value">${fmtOr(max, 0)}</span><span class="tile-unit">${TXT.kmh}</span>
-                ${dir != null ? windArrowHtml(dir, 26) : ''}
+                ${dir != null ? windFromHtml(dir) : ''}
             </div>
             ${max != null ? `<div class="t-body">${wordFor(WIND_WORDS, max)}</div>` : ''}
-            ${dir != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.dominant}</span><span class="t-cap-emph">${getCompass(dir)} ${fmtOr(dir, 0, '°')}</span></div>` : ''}
             ${gust != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.maxGust}</span><span class="t-cap-emph">${fmtOr(gust, 0, ' ' + TXT.kmh)}</span></div>` : ''}
             ${mean != null ? `<div class="tile-row"><span class="t-cap">${TXT.day.meanWind}</span><span class="t-cap-emph">${fmtOr(mean, 0, ' ' + TXT.kmh)}</span></div>` : ''}
         `);
