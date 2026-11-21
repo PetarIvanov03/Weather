@@ -55,7 +55,7 @@ Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript me
 - **Hourly rail** — next 24 hours with icon, temperature, precipitation probability, wind, and UV index; horizontally scrollable with snap, the ‹ › chevrons scroll one screenful, and a thin line under the cards shows the scroll position
 - **14-day forecast** — day, icon, precipitation %, and low/high with a range bar scaled to the forecast's global min and max
 - **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, and sun (sunrise and sunset as two labelled rows, plus day length)
-- **Hour/day detail popups** — tap an hour or a day for a chart plus a full tile grid: precipitation, wind, humidity, pressure, clouds, visibility, UV, thunderstorm risk, snow, air quality, pollen, and a forecast-confidence rating — see [Detail popups](#detail-popups)
+- **Hour/day detail popups** — tap an hour or a day for a chart (temperature, precipitation, wind) plus tiles: precipitation, wind, humidity, UV, visibility, thunderstorm risk and snow when relevant, air quality, pollen, and (per day) a forecast-confidence rating — see [Detail popups](#detail-popups)
 - **Search autocomplete** — debounced, up to 8 disambiguated matches (`name, region, country`) so same-named cities like Dimitrovgrad in Bulgaria and in Russia are both reachable; full keyboard support (↑/↓, Enter, Esc) with `aria-activedescendant` tracking the highlighted option
 - **Last location remembered** — the most recent result is saved to `localStorage` and restored on the next visit
 - **Geolocation** — on a first visit (no saved location) or via the locate button, with reverse geocoding for the place name, falling back to search if denied
@@ -65,20 +65,21 @@ Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript me
 
 ## Detail popups
 
-Clicking an hour on the rail, or a row in the 14-day list, opens a detail popup — a bottom sheet on mobile, a centered dialog from 768px up — built around a shared tabbed chart (`mountChartTabs`) and a grid of tiles.
+Clicking an hour on the rail, or a row in the 14-day list, opens a detail popup — a bottom sheet on mobile, a centered dialog from 768px up — built around a shared tabbed chart (`mountChartTabs`: smooth monotone curves that never overshoot the data, and a cursor that glides with the pointer) and a grid of tiles.
 
-- **Hour popup** — hero (icon, condition, temperature, feels-like), a confidence badge, a ±12-hour chart, then tiles for precipitation, wind, humidity, pressure (3 h trend), clouds, visibility, UV, an *estimated* thunderstorm risk, and snow (shown only when relevant that hour). Air quality (AQI band, leading pollutant, pollutant chips, dust, haze) and pollen sections follow, when the data covers that hour.
+- **Hour popup** — kept short: hero (icon, condition, temperature, feels-like), a ±12-hour chart (temperature, precipitation, wind), then a compact grid of small tiles (two per row on phones) — precipitation (amount + chance), wind (speed, direction arrow, gusts), humidity and UV (daytime only). Visibility appears only below 4 km, an *estimated* thunderstorm risk only at "moderate" or above, and snow only when it is falling. Air quality (European AQI value, band and scale) follows when the data covers that hour, and pollen only when a species is above "Low".
 - **Day popup** — hero with a high/low and feels-like range, a one-line comparison with the neighbouring day, a generated summary sentence, the same chart windowed to that day, a horizontally-scrollable hour strip (tapping an hour opens its hour popup, with a "← Back" to return), then daily-aggregate tiles — precipitation with a wet-window list, wind, sun (arc + daylight/sunshine), UV protection window, moon phase, humidity/pressure/cloud aggregates, thunderstorm, snow, and a forecast-confidence tile.
 
-Data source per section: the hero, chart and weather tiles come from the same Forecast request as the main screen (see [Data sources](#data-sources) for the full variable list); the air-quality and pollen sections come from the Air Quality API — pollen stops covering roughly 20 hours before the rest of AQ does, so the two sections can disagree on whether they have data for a given hour; the confidence tile/badge comes from the Ensemble API, fetched lazily (only once a popup is first opened for the current location) and cached per-location on `lastRender.ensemble`.
+Data source per section: the hero, chart and weather tiles come from the same Forecast request as the main screen (see [Data sources](#data-sources) for the full variable list); the air-quality and pollen sections come from the Air Quality API — pollen stops covering roughly 20 hours before the rest of AQ does, so the two sections can disagree on whether they have data for a given hour; the confidence tile/badge comes from the Ensemble API, fetched lazily (only once a day popup is first opened for the current location) and cached per-location on `lastRender.ensemble`.
 
-**Derived client-side**, not returned by any API: thunderstorm risk (from CAPE + lifted index + weather code), the day summary sentence, precipitation windows (merged runs of wet hours), the UV protection window, the comfort/visibility/haze words, the sun-arc position, the moon-phase glyph, the neighbouring-day comparison, and the ensemble spread → confidence level.
+**Derived client-side**, not returned by any API: thunderstorm risk (from CAPE + lifted index + weather code), the day summary sentence, precipitation windows (merged runs of wet hours), the UV protection window, the comfort/visibility words, the sun-arc position, the moon-phase glyph, the neighbouring-day comparison, and the ensemble spread → confidence level.
 
 **Tuning the approximate thresholds** — every cutoff is a named constant grouped near the top of the "Detail popup content" section of `app.js`:
 - Thunderstorm risk: `THUNDER_CAPE_STEPS` / `THUNDER_LI_STEPS` (CAPE in J/kg, lifted index in °C; an explicit thunder `weather_code` floors the result at "moderate")
 - Pollen level bands: `POLLEN_LEVELS` (grains/m³ — Open-Meteo publishes no official scale; these are widely-used rough thresholds, not a medical reference)
 - Forecast confidence: `ENSEMBLE_SPREAD_HIGH_C` / `ENSEMBLE_SPREAD_MEDIUM_C` (p90−p10 of ensemble members' daily mean temperature, °C), with `LOW_CONFIDENCE_FROM_DAY` as the lead-time fallback used before the ensemble request resolves
-- Wind/dew-point/visibility/haze words, the snow-tile cutoff, and the pressure-steady bands sit in the same section as small `[upper bound, word]` tables read by a shared `wordFor()` lookup — edit a table to change a wording or a threshold
+- Hour popup visibility cutoff: `VISIBILITY_TILE_BELOW_KM`; pollen species listed from `POLLEN_NOTABLE_FROM` (the top of the "Low" band)
+- Wind/dew-point/visibility words, the snow-tile cutoff, and the pressure-steady bands sit in the same section as small `[upper bound, word]` tables read by a shared `wordFor()` lookup — edit a table to change a wording or a threshold
 
 **Attribution** — both popups end with a muted credit line: "Weather data by Open-Meteo.com" always, plus "Air quality: CAMS ENSEMBLE (Copernicus) via Open-Meteo" whenever that specific hour or day actually has air-quality or pollen content on screen (not just the "forecast covers ~4–5 days" fallback message).
 
@@ -97,9 +98,9 @@ All client-side, all free, no keys.
 
 | API | Used for |
 |---|---|
-| [Open-Meteo Forecast](https://open-meteo.com/en/docs) | `current`, `hourly` and `daily` conditions for the main screen and both detail popups — temperature, precipitation, wind, humidity, pressure, cloud layers, visibility, UV, CAPE/lifted index, freezing level, sun and moon times — 14 days, `forecast_days=14&timezone=auto` |
-| [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) | European AQI, pollutant concentrations and pollen — fetched alongside the main forecast, `forecast_days=5`; powers the popups' air-quality and pollen sections |
-| [Open-Meteo Ensemble](https://open-meteo.com/en/docs/ensemble-api) | `ecmwf_ifs025` (51-member) hourly temperature, used for the forecast-confidence tile/badge — fetched lazily, only once a detail popup first opens for the current location |
+| [Open-Meteo Forecast](https://open-meteo.com/en/docs) | `current`, `hourly` and `daily` conditions for the main screen and both detail popups — temperature, precipitation, wind, humidity, pressure, cloud cover, visibility, UV, CAPE/lifted index, freezing level, sun and moon times — 14 days, `forecast_days=14&timezone=auto` |
+| [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) | European AQI with its per-pollutant sub-indices, PM2.5 and pollen — fetched alongside the main forecast, `forecast_days=5`; powers the popups' air-quality and pollen sections |
+| [Open-Meteo Ensemble](https://open-meteo.com/en/docs/ensemble-api) | `ecmwf_ifs025` (51-member) hourly temperature, used for the day popup's forecast-confidence tile/badge — fetched lazily, only once a day popup first opens for the current location |
 | [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api) | City search and autocomplete |
 | [BigDataCloud Reverse Geocoding](https://www.bigdatacloud.com/free-api/free-reverse-geocode-to-city-api) | Place name for browser geolocation coordinates |
 

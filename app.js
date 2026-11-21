@@ -54,10 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             temperature: 'Temperature',
             precipitation: 'Precipitation',
             wind: 'Wind',
-            humidity: 'Humidity',
-            pressure: 'Pressure',
-            clouds: 'Clouds',
-            uv: 'UV',
         },
         detail: {
             feelsLike: 'Feels like',
@@ -76,34 +72,20 @@ document.addEventListener('DOMContentLoaded', () => {
             wind: 'Wind',
             gusts: 'Gusts',
             humidity: 'Humidity',
-            dewPoint: 'Dew point',
             pressure: 'Pressure',
-            trend3h: '3 h trend',
             rising: 'Rising',
             steady: 'Steady',
             falling: 'Falling',
-            clouds: 'Clouds',
-            cloudLow: 'Low',
-            cloudMid: 'Mid',
-            cloudHigh: 'High',
             visibility: 'Visibility',
             uvIndex: 'UV Index',
-            clearSky: 'Clear sky',
             thunder: 'Thunderstorm risk',
             estimated: 'Estimated',
-            cape: 'CAPE',
-            liftedIndex: 'Lifted index',
             thunderLevels: { none: 'None', low: 'Low', moderate: 'Moderate', high: 'High' },
             snowTitle: 'Snow & freezing level',
-            snowfall: 'Snowfall',
-            snowDepth: 'Snow depth',
-            freezingLevel: 'Freezing level',
             airQuality: 'Air quality',
             aqiLabel: 'European AQI',
             aqUnavailable: 'Air quality forecast covers about 4–5 days.',
             leadingPollutant: 'Leading pollutant',
-            dust: 'Saharan dust',
-            haze: 'Haze',
             pollen: 'Pollen',
             noPollen: 'No significant pollen expected',
             pollenSpecies: {
@@ -121,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 nitrogen_dioxide: 'NO₂',
                 sulphur_dioxide: 'SO₂',
             },
-            grainsPerM3: 'grains/m³',
             attribution: {
                 weather: 'Weather data by',
                 openMeteo: 'Open-Meteo.com',
@@ -202,15 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
             precipChance: 'Chance',
             wind: 'Wind',
             gusts: 'Gusts',
-            humidity: 'Humidity',
-            dewPoint: 'Dew point',
-            pressure: 'Pressure',
-            cloudTotal: 'Total',
-            cloudLow: 'Low',
-            cloudMid: 'Mid',
-            cloudHigh: 'High',
-            uv: 'UV',
-            uvClearSky: 'Clear sky',
         },
         // Words for the [upper bound, word] tables; the bounds themselves live
         // with the other thresholds in "Detail popup content" / "Day popup"
@@ -218,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
             wind: { calm: 'Calm', light: 'Light', moderate: 'Moderate', fresh: 'Fresh', strong: 'Strong', veryStrong: 'Very strong' },
             dewPoint: { dry: 'Dry', comfortable: 'Comfortable', humid: 'Humid', oppressive: 'Oppressive' },
             visibility: { veryPoor: 'Very poor', poor: 'Poor', moderate: 'Moderate', good: 'Good' },
-            haze: { clear: 'Clear', light: 'Light haze', hazy: 'Hazy' },
             pollen: { low: 'Low', moderate: 'Moderate', high: 'High', veryHigh: 'Very high' },
             aqi: { good: 'Good', fair: 'Fair', moderate: 'Moderate', poor: 'Poor', veryPoor: 'Very poor', extremelyPoor: 'Extremely poor' },
             moon: {
@@ -805,9 +776,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const forecastUrl = (lat, lon) => 'https://api.open-meteo.com/v1/forecast'
         + `?latitude=${lat}&longitude=${lon}`
         + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,is_day'
-        + '&hourly=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,precipitation_probability,rain,showers,snowfall,snow_depth,'
-        + 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,'
-        + 'cloud_cover_high,visibility,uv_index,uv_index_clear_sky,cape,lifted_index,freezing_level_height'
+        + '&hourly=temperature_2m,apparent_temperature,weather_code,is_day,precipitation,precipitation_probability,snowfall,snow_depth,'
+        + 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,'
+        + 'visibility,uv_index,cape,lifted_index,freezing_level_height'
         + '&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,'
         + 'sunshine_duration,uv_index_max,uv_index_clear_sky_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,'
         + 'precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,moonrise,moonset,moon_phase'
@@ -816,8 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const airQualityUrl = (lat, lon) => 'https://air-quality-api.open-meteo.com/v1/air-quality'
         + `?latitude=${lat}&longitude=${lon}`
         + '&hourly=european_aqi,european_aqi_pm2_5,european_aqi_pm10,european_aqi_nitrogen_dioxide,european_aqi_ozone,european_aqi_sulphur_dioxide,'
-        + 'pm2_5,pm10,ozone,nitrogen_dioxide,sulphur_dioxide,dust,aerosol_optical_depth,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,'
-        + 'olive_pollen,ragweed_pollen'
+        + 'pm2_5,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen'
         + '&forecast_days=5&timezone=auto';
 
     // Best-effort air quality fetch: failure of any kind (network, non-200,
@@ -1018,7 +988,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const KMH = ` ${TXT.kmh}`;
 
-    // axis options: min/max pin a bound, minMax raises an auto max, minSpan
+    // axis options: min/max pin a bound, minSpan
     // forces a minimum visible range, pad adds headroom to auto bounds.
     const CHART_TABS = [
         {
@@ -1047,41 +1017,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 { key: 'wind_gusts_10m', type: 'line', dash: '6 4', color: 'alt', unit: KMH, label: TXT.chartSeries.gusts },
             ],
         },
-        {
-            id: 'humidity', label: TXT.chartTabs.humidity,
-            left: { unit: '%', min: 0, max: 100 },
-            right: { unit: '°', minSpan: 4, pad: 0.12 },
-            series: [
-                { key: 'relative_humidity_2m', type: 'line', color: 'main', unit: '%', label: TXT.chartSeries.humidity },
-                { key: 'dew_point_2m', type: 'line', dash: '6 4', color: 'alt', axis: 'right', unit: '°', label: TXT.chartSeries.dewPoint },
-            ],
-        },
-        {
-            id: 'pressure', label: TXT.chartTabs.pressure,
-            left: { unit: ' hPa', minSpan: 6, pad: 0.15 },
-            series: [
-                { key: 'pressure_msl', type: 'line', color: 'main', unit: ' hPa', label: TXT.chartSeries.pressure },
-            ],
-        },
-        {
-            id: 'clouds', label: TXT.chartTabs.clouds,
-            left: { unit: '%', min: 0, max: 100 },
-            series: [
-                { key: 'cloud_cover', type: 'area', color: 'main', unit: '%', label: TXT.chartSeries.cloudTotal },
-                { key: 'cloud_cover_low', type: 'line', thin: true, color: 'alt', unit: '%', label: TXT.chartSeries.cloudLow },
-                { key: 'cloud_cover_mid', type: 'line', thin: true, dash: '6 4', color: 'warm', unit: '%', label: TXT.chartSeries.cloudMid },
-                { key: 'cloud_cover_high', type: 'line', thin: true, dash: '2 3', color: 'main', unit: '%', label: TXT.chartSeries.cloudHigh },
-            ],
-        },
-        {
-            id: 'uv', label: TXT.chartTabs.uv,
-            left: { unit: '', min: 0, minMax: 11 },
-            series: [
-                { key: 'uv_index', type: 'bars', color: 'warm', unit: '', label: TXT.chartSeries.uv },
-                { key: 'uv_index_clear_sky', type: 'line', dash: '6 4', color: 'main', unit: '', label: TXT.chartSeries.uvClearSky },
-            ],
-        },
     ];
+
+    /* ---------- smooth curves ----------
+       Monotone cubic interpolation (Fritsch–Carlson) over evenly spaced
+       points: smooth like a spline, but never overshoots between two hours,
+       so a curve can't dip below a flat 0 or bulge past the real peak.
+       `ys` are pixel y values (null = gap); every run between gaps is its
+       own curve. */
+    const monotoneSlopes = (ys) => {
+        const ms = ys.map(() => 0);
+        let start = 0;
+        while (start < ys.length) {
+            if (ys[start] == null) { start++; continue; }
+            let end = start;
+            while (end + 1 < ys.length && ys[end + 1] != null) end++;
+            // Slopes per index step within this run
+            const d = [];
+            for (let k = start; k < end; k++) d.push(ys[k + 1] - ys[k]);
+            for (let k = start; k <= end; k++) {
+                const before = d[k - start - 1], after = d[k - start];
+                if (before == null) ms[k] = after == null ? 0 : after;
+                else if (after == null) ms[k] = before;
+                else ms[k] = before * after <= 0 ? 0 : (before + after) / 2;
+            }
+            // Clamp tangents so the curve stays monotone between points
+            d.forEach((dk, j) => {
+                const k = start + j;
+                if (dk === 0) { ms[k] = 0; ms[k + 1] = 0; return; }
+                const a = ms[k] / dk, b = ms[k + 1] / dk, s = a * a + b * b;
+                if (s > 9) { const t = 3 / Math.sqrt(s); ms[k] = t * a * dk; ms[k + 1] = t * b * dk; }
+            });
+            start = end + 1;
+        }
+        return ms;
+    };
+
+    const smoothPath = (ys, ms, xAt, step) => {
+        let d = '';
+        for (let p = 0; p < ys.length; p++) {
+            if (ys[p] == null) continue;
+            if (p === 0 || ys[p - 1] == null) { d += `M${xAt(p).toFixed(1)} ${ys[p].toFixed(1)} `; continue; }
+            const c1x = xAt(p - 1) + step / 3, c1y = ys[p - 1] + ms[p - 1] / 3;
+            const c2x = xAt(p) - step / 3, c2y = ys[p] - ms[p] / 3;
+            d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${xAt(p).toFixed(1)} ${ys[p].toFixed(1)} `;
+        }
+        return d.trim();
+    };
+
+    // The same curve evaluated at a fractional index f (for the cursor dot)
+    const curveYAt = (ys, ms, f) => {
+        const k = Math.floor(f), t = f - k;
+        if (ys[k] == null) return null;
+        if (t === 0 || ys[k + 1] == null) return t === 0 ? ys[k] : null;
+        const t2 = t * t, t3 = t2 * t;
+        return (2 * t3 - 3 * t2 + 1) * ys[k] + (t3 - 2 * t2 + t) * ms[k]
+            + (-2 * t3 + 3 * t2) * ys[k + 1] + (t3 - t2) * ms[k + 1];
+    };
 
     /* ---------- scale helpers ---------- */
     const niceNum = (range, round) => {
@@ -1113,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!nums.length) return null;
         let lo = o.min != null ? o.min : Math.min.apply(null, nums);
         let hi = o.max != null ? o.max : Math.max.apply(null, nums);
-        if (o.minMax != null && hi < o.minMax) hi = o.minMax;
         if (hi < lo) hi = lo;
 
         const pad = (o.pad || 0) * Math.max(1, hi - lo);
@@ -1185,12 +1176,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Swatch that mirrors the series' own stroke style, so the legend
         // identifies each line without relying on colour alone.
-        const legendSwatch = (s, colour) => (s.type === 'bars' || s.type === 'area')
+        const legendSwatch = (s, colour) => s.type === 'bars'
             ? `<svg width="18" height="10" aria-hidden="true"><rect x="1" y="2" width="16" height="7" rx="1.5"
-                   fill="${colour}" fill-opacity="${s.type === 'area' ? '0.32' : '0.85'}"
+                   fill="${colour}" fill-opacity="0.85"
                    stroke="${colour}" stroke-width="1"></rect></svg>`
             : `<svg width="18" height="10" aria-hidden="true"><line x1="1" y1="5" x2="17" y2="5"
-                   stroke="${colour}" stroke-width="${s.thin ? 1.4 : 2.2}" stroke-linecap="round"
+                   stroke="${colour}" stroke-width="2.2" stroke-linecap="round"
                    ${s.dash ? `stroke-dasharray="${s.dash}"` : ''}></line></svg>`;
 
         const showEmpty = () => {
@@ -1268,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!night && runStart !== -1) {
                         const x0 = Math.max(padL, xAt(runStart) - step / 2);
                         const x1 = Math.min(padL + plotW, xAt(p - 1) + step / 2);
-                        if (x1 > x0) parts.push(`<rect x="${x0.toFixed(1)}" y="${padT}" width="${(x1 - x0).toFixed(1)}" height="${plotH.toFixed(1)}" fill="${CHART_INK.night}"></rect>`);
+                        if (x1 > x0) parts.push(`<rect x="${x0.toFixed(1)}" y="${padT}" width="${(x1 - x0).toFixed(1)}" height="${plotH.toFixed(1)}" rx="8" fill="${CHART_INK.night}"></rect>`);
                         runStart = -1;
                     }
                 }
@@ -1316,54 +1307,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 parts.push(`<text x="${x.toFixed(1)}" y="${(baseY + 15).toFixed(1)}" text-anchor="middle" font-size="10" fill="${CHART_INK.axis}">${text}</text>`);
             });
 
-            // Series — nulls break the path instead of plotting as zero
-            const linePath = (vals, axis) => {
-                let d = '', pen = false;
-                for (let p = 0; p < n; p++) {
-                    if (vals[p] == null) { pen = false; continue; }
-                    d += `${pen ? 'L' : 'M'}${xAt(p).toFixed(1)} ${yOn(axis, vals[p]).toFixed(1)} `;
-                    pen = true;
-                }
-                return d.trim();
-            };
-            const areaPath = (vals, axis) => {
-                let d = '', run = [];
-                const flush = () => {
-                    if (run.length) {
-                        d += `M${xAt(run[0]).toFixed(1)} ${baseY.toFixed(1)} `
-                            + run.map((p) => `L${xAt(p).toFixed(1)} ${yOn(axis, vals[p]).toFixed(1)} `).join('')
-                            + `L${xAt(run[run.length - 1]).toFixed(1)} ${baseY.toFixed(1)} Z `;
-                    }
-                    run = [];
-                };
-                for (let p = 0; p < n; p++) {
-                    if (vals[p] == null) flush(); else run.push(p);
-                }
-                flush();
-                return d.trim();
-            };
-
+            // Series — lines are smooth monotone curves (no overshoot past the
+            // data); nulls break the curve instead of plotting as zero.
             visible.forEach((v) => {
                 const { s, vals, axis, colour } = v;
+                v.ys = vals.map((val) => (val == null ? null : yOn(axis, val)));
                 if (s.type === 'bars') {
                     const zeroY = yOn(axis, Math.max(axis.min, Math.min(0, axis.max)));
                     const bw = Math.max(2, Math.min(step * 0.62, 26));
                     for (let p = 0; p < n; p++) {
                         if (vals[p] == null) continue;
-                        const y = yOn(axis, vals[p]);
-                        const top = Math.min(y, zeroY);
-                        const hgt = Math.abs(zeroY - y);
+                        const top = Math.min(v.ys[p], zeroY);
+                        const hgt = Math.abs(zeroY - v.ys[p]);
                         if (hgt < 0.4) continue;
-                        parts.push(`<rect x="${(xAt(p) - bw / 2).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${hgt.toFixed(1)}" rx="${Math.min(2, bw / 3).toFixed(1)}" fill="${colour}" fill-opacity="0.72"></rect>`);
+                        parts.push(`<rect x="${(xAt(p) - bw / 2).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${hgt.toFixed(1)}" rx="${Math.min(4, bw / 2, hgt / 2).toFixed(1)}" fill="${colour}" fill-opacity="0.72"></rect>`);
                     }
-                } else if (s.type === 'area') {
-                    const d = areaPath(vals, axis);
-                    if (d) parts.push(`<path d="${d}" fill="${colour}" fill-opacity="0.20" stroke="none"></path>`);
-                    const l = linePath(vals, axis);
-                    if (l) parts.push(`<path d="${l}" fill="none" stroke="${colour}" stroke-width="1.8" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"></path>`);
                 } else {
-                    const d = linePath(vals, axis);
-                    if (d) parts.push(`<path d="${d}" fill="none" stroke="${colour}" stroke-width="${s.thin ? 1.4 : 2.2}" stroke-linecap="round" stroke-linejoin="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}></path>`);
+                    v.ms = monotoneSlopes(v.ys);
+                    const d = smoothPath(v.ys, v.ms, xAt, step);
+                    if (d) parts.push(`<path d="${d}" fill="none" stroke="${colour}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}></path>`);
                 }
                 // Points with no drawable neighbour would otherwise vanish
                 for (let p = 0; p < n; p++) {
@@ -1433,14 +1395,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 tip.classList.remove('is-visible');
             };
 
+            // The cursor glides with the pointer: line dots ride the curve at
+            // the exact x; the tooltip (and bar dots) show the nearest hour.
             const moveCursor = (clientX) => {
                 const box = svg.getBoundingClientRect();
                 if (!box.width) return;
                 const px = (clientX - box.left) * (w / box.width);
-                const p = n > 1
-                    ? Math.max(0, Math.min(n - 1, Math.round((px - padL) / step)))
-                    : 0;
-                const x = xAt(p);
+                const f = n > 1 ? Math.max(0, Math.min(n - 1, (px - padL) / step)) : 0;
+                const p = Math.round(f);
+                const x = n > 1 ? padL + f * step : xAt(0);
 
                 cursor.style.display = '';
                 cursorLine.setAttribute('x1', x.toFixed(1));
@@ -1448,10 +1411,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 visible.forEach((v, k) => {
                     const dot = dotEls[k];
                     if (!dot) return;
-                    if (v.vals[p] == null) { dot.setAttribute('r', '0'); return; }
+                    const onCurve = v.ms ? curveYAt(v.ys, v.ms, f) : null;
+                    const y = onCurve != null ? onCurve : v.ys[p];
+                    if (y == null) { dot.setAttribute('r', '0'); return; }
                     dot.setAttribute('r', '3.6');
-                    dot.setAttribute('cx', x.toFixed(1));
-                    dot.setAttribute('cy', yOn(v.axis, v.vals[p]).toFixed(1));
+                    dot.setAttribute('cx', (onCurve != null ? x : xAt(p)).toFixed(1));
+                    dot.setAttribute('cy', y.toFixed(1));
                 });
 
                 const iso = hourly.time[indices[p]];
@@ -1555,11 +1520,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const WIND_WORDS = [[2, W.wind.calm], [12, W.wind.light], [20, W.wind.moderate], [29, W.wind.fresh], [39, W.wind.strong], [Infinity, W.wind.veryStrong]];
     const DEW_POINT_WORDS = [[10, W.dewPoint.dry], [16, W.dewPoint.comfortable], [21, W.dewPoint.humid], [Infinity, W.dewPoint.oppressive]];
     const VISIBILITY_WORDS = [[1, W.visibility.veryPoor], [4, W.visibility.poor], [10, W.visibility.moderate], [Infinity, W.visibility.good]];  // km
-    const HAZE_WORDS = [[0.1, W.haze.clear], [0.3, W.haze.light], [Infinity, W.haze.hazy]];                    // aerosol optical depth
 
-    const PRESSURE_STEADY_HPA = 1;    // ±1 hPa over 3 h still reads as steady
-    const PRESSURE_TREND_HOURS = 3;
     const SNOW_TILE_MAX_TEMP = 4;     // °C — show the snow tile at or below this
+    const VISIBILITY_TILE_BELOW_KM = 4;   // hour popup shows visibility only below this
     const VISIBILITY_DECIMAL_BELOW_KM = 10;
 
     // Approximate pollen scale (grains/m³). Open-Meteo publishes no official
@@ -1567,6 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // indicative only, tune freely.
     const POLLEN_LEVELS = [[10, W.pollen.low], [50, W.pollen.moderate], [200, W.pollen.high], [Infinity, W.pollen.veryHigh]];
     const POLLEN_BAR_FULL = 200;      // grains/m³ that fills the level bar
+    const POLLEN_NOTABLE_FROM = POLLEN_LEVELS[0][0];   // hour popup lists only species above "Low"
 
     // European AQI bands and their official colours
     const AQI_BANDS = [
@@ -1579,7 +1543,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const AQI_SCALE_MAX = 120;        // the open-ended top band is clipped here on the bar
     const AQI_SUB_INDEX_KEYS = ['pm2_5', 'pm10', 'ozone', 'nitrogen_dioxide', 'sulphur_dioxide'];
-    const AQI_CHIP_KEYS = ['pm2_5', 'pm10', 'ozone', 'nitrogen_dioxide'];
 
     // Thunderstorm estimate. CAPE in J/kg (higher = more energy); lifted index
     // in °C (NEGATIVE = unstable). Steps map onto none / low / moderate / high.
@@ -1745,28 +1708,25 @@ document.addEventListener('DOMContentLoaded', () => {
             + `</div>`;
     };
 
-    /* ---------- tiles ---------- */
+    /* ---------- hour tiles ----------
+       Compact: a title, one big value, at most one supporting line. Tiles
+       that only matter sometimes (visibility, thunder, snow) hide otherwise. */
+    const valueRowHtml = (value, unit, extra) => `
+        <div class="tile-value-row">
+            <span class="t-value">${value}</span>${unit ? `<span class="tile-unit">${unit}</span>` : ''}${extra || ''}
+        </div>`;
+
     const precipitationTile = (i) => {
         const amount = hourlyValue('precipitation', i);
         const prob = hourlyValue('precipitation_probability', i);
-        const rain = hourlyValue('rain', i);
-        const showers = hourlyValue('showers', i);
-        const snow = hourlyValue('snowfall', i);
         if (amount == null && prob == null) return '';
 
-        const rows = [];
-        if (rain != null && rain > 0) rows.push([TXT.detail.rain, fmtOr(rain, 1, ' mm')]);
-        if (showers != null && showers > 0) rows.push([TXT.detail.showers, fmtOr(showers, 1, ' mm')]);
-        if (snow != null && snow > 0) rows.push([TXT.detail.snow, fmtOr(snow, 1, ' cm')]);
-
-        const headline = (amount != null && amount > 0)
-            ? `<span class="t-value">${fmtOr(amount, 1)}</span><span class="tile-unit">mm</span>`
-            : `<span class="t-value">${amount == null ? DASH : TXT.detail.dry}</span>`;
-
+        const value = amount == null ? valueRowHtml(DASH)
+            : amount > 0 ? valueRowHtml(fmtOr(amount, 1), 'mm')
+            : valueRowHtml(TXT.detail.dry);
         return tileHtml(TXT.detail.precipitation, `
-            <div class="tile-value-row">${headline}</div>
-            ${prob != null ? `<div class="t-body">${TXT.detail.chance} <span class="t-cap-accent">${fmtOr(prob, 0, '%')}</span></div>` : ''}
-            ${rows.map(([k, v]) => `<div class="tile-row"><span class="t-cap">${k}</span><span class="t-cap-emph">${v}</span></div>`).join('')}
+            ${value}
+            ${prob != null ? `<div class="t-cap">${TXT.detail.chance} <span class="t-cap-accent">${fmtOr(prob, 0, '%')}</span></div>` : ''}
         `);
     };
 
@@ -1774,134 +1734,54 @@ document.addEventListener('DOMContentLoaded', () => {
         const speed = hourlyValue('wind_speed_10m', i);
         const gusts = hourlyValue('wind_gusts_10m', i);
         const dir = hourlyValue('wind_direction_10m', i);
-        if (speed == null && gusts == null && dir == null) return '';
+        if (speed == null && gusts == null) return '';
 
         return tileHtml(TXT.detail.wind, `
-            <div class="tile-value-row">
-                <span class="t-value">${fmtOr(speed, 0)}</span><span class="tile-unit">${TXT.kmh}</span>
-                ${dir != null ? windArrowHtml(dir, 26) : ''}
-            </div>
-            ${speed != null ? `<div class="t-body">${wordFor(WIND_WORDS, speed)}</div>` : ''}
-            ${dir != null ? `<div class="tile-row"><span class="t-cap">${getCompass(dir)}</span><span class="t-cap-emph">${fmtOr(dir, 0, '°')}</span></div>` : ''}
-            ${gusts != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.gusts}</span><span class="t-cap-emph">${fmtOr(gusts, 0, ' ' + TXT.kmh)}</span></div>` : ''}
+            ${valueRowHtml(fmtOr(speed, 0), TXT.kmh, dir != null ? windArrowHtml(dir, 22) : '')}
+            ${gusts != null ? `<div class="t-cap">${TXT.detail.gusts} ${fmtOr(gusts, 0, ' ' + TXT.kmh)}</div>` : ''}
         `);
     };
 
     const humidityTile = (i) => {
         const rh = hourlyValue('relative_humidity_2m', i);
-        const dp = hourlyValue('dew_point_2m', i);
-        if (rh == null && dp == null) return '';
-
-        return tileHtml(TXT.detail.humidity, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(rh, 0)}</span><span class="tile-unit">%</span></div>
-            ${dp != null ? `<div class="t-body">${wordFor(DEW_POINT_WORDS, dp)}</div>` : ''}
-            ${dp != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.dewPoint}</span><span class="t-cap-emph">${fmtOr(dp, 0, '°')}</span></div>` : ''}
-        `);
-    };
-
-    const pressureTile = (i) => {
-        const p = hourlyValue('pressure_msl', i);
-        if (p == null) return '';
-
-        // Trend needs a reading 3 h back; near the array start there isn't one
-        let trend = '';
-        const prev = i >= PRESSURE_TREND_HOURS ? hourlyValue('pressure_msl', i - PRESSURE_TREND_HOURS) : null;
-        if (prev != null) {
-            const delta = p - prev;
-            const word = Math.abs(delta) <= PRESSURE_STEADY_HPA ? TXT.detail.steady
-                : delta > 0 ? TXT.detail.rising : TXT.detail.falling;
-            const glyph = Math.abs(delta) <= PRESSURE_STEADY_HPA ? '→' : delta > 0 ? '↑' : '↓';
-            trend = `<div class="tile-row"><span class="t-cap">${TXT.detail.trend3h}</span>`
-                + `<span class="t-cap-emph">${glyph} ${word} ${delta > 0 ? '+' : ''}${delta.toFixed(1)}</span></div>`;
-        }
-
-        return tileHtml(TXT.detail.pressure, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(p, 0)}</span><span class="tile-unit">hPa</span></div>
-            ${trend}
-        `);
-    };
-
-    const cloudsTile = (i) => {
-        const total = hourlyValue('cloud_cover', i);
-        const layers = [
-            [TXT.detail.cloudLow, hourlyValue('cloud_cover_low', i)],
-            [TXT.detail.cloudMid, hourlyValue('cloud_cover_mid', i)],
-            [TXT.detail.cloudHigh, hourlyValue('cloud_cover_high', i)],
-        ].filter(([, v]) => v != null);
-        if (total == null && !layers.length) return '';
-
-        return tileHtml(TXT.detail.clouds, `
-            <div class="tile-value-row"><span class="t-value">${fmtOr(total, 0)}</span><span class="tile-unit">%</span></div>
-            ${layers.map(([name, v]) => `
-                <div class="layer-row">
-                    <span class="t-cap layer-name">${name}</span>
-                    ${miniBarHtml(v, 'rgba(255,255,255,0.75)')}
-                    <span class="t-cap-emph layer-value">${fmtOr(v, 0, '%')}</span>
-                </div>
-            `).join('')}
-        `);
-    };
-
-    const visibilityTile = (i) => {
-        const metres = hourlyValue('visibility', i);   // API reports metres
-        if (metres == null) return '';
-        const km = metres / 1000;
-        const shown = km < VISIBILITY_DECIMAL_BELOW_KM ? km.toFixed(1) : String(Math.round(km));
-
-        return tileHtml(TXT.detail.visibility, `
-            <div class="tile-value-row"><span class="t-value">${shown}</span><span class="tile-unit">km</span></div>
-            <div class="t-body">${wordFor(VISIBILITY_WORDS, km)}</div>
-        `);
+        if (rh == null) return '';
+        return tileHtml(TXT.detail.humidity, valueRowHtml(fmtOr(rh, 0), '%'));
     };
 
     const uvTile = (i) => {
         const uv = hourlyValue('uv_index', i);
-        const clear = hourlyValue('uv_index_clear_sky', i);
-        const isDay = hourlyValue('is_day', i);
         if (uv == null) return '';
-        if (!(isDay === 1 || uv > 0)) return '';   // night with no UV — nothing to say
+        if (!(hourlyValue('is_day', i) === 1 || uv > 0)) return '';   // night with no UV — nothing to say
 
         return tileHtml(TXT.detail.uvIndex, `
-            <div class="tile-value-row"><span class="t-value">${uvTextHtml(uv)}</span></div>
-            <div class="uv-bar-wrap">
-                <span class="t-body">${getUvLabel(uv)}</span>
-                ${uvBarHtml(uv)}
-            </div>
-            ${clear != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.clearSky}</span><span class="t-cap-emph">${uvTextHtml(clear)}</span></div>` : ''}
+            ${valueRowHtml(uvTextHtml(uv), '', `<span class="t-cap">${getUvLabel(uv)}</span>`)}
+            ${uvBarHtml(uv)}
         `);
     };
 
-    const thunderTile = (i) => {
-        const cape = hourlyValue('cape', i);
-        const li = hourlyValue('lifted_index', i);
-        const code = hourlyValue('weather_code', i);
-        const level = thunderRisk(cape, li, code);
-        if (level == null) return '';   // nothing to base an estimate on
+    // Only when it is poor enough to matter (fog, heavy precipitation)
+    const visibilityTile = (i) => {
+        const metres = hourlyValue('visibility', i);   // API reports metres
+        if (metres == null || metres / 1000 >= VISIBILITY_TILE_BELOW_KM) return '';
+        const km = metres / 1000;
 
-        return tileHtml(TXT.detail.thunder, `
-            <div class="tile-value-row"><span class="t-value">${TXT.detail.thunderLevels[level]}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.detail.cape}</span><span class="t-cap-emph">${fmtOr(cape, 0, ' J/kg')}</span></div>
-            <div class="tile-row"><span class="t-cap">${TXT.detail.liftedIndex}</span><span class="t-cap-emph">${fmtOr(li, 1)}</span></div>
-        `, TXT.detail.estimated);
+        return tileHtml(TXT.detail.visibility, `
+            ${valueRowHtml(km.toFixed(1), 'km')}
+            <div class="t-cap">${wordFor(VISIBILITY_WORDS, km)}</div>
+        `);
+    };
+
+    // Only at "moderate" or above; the raw CAPE / lifted index stay internal
+    const thunderTile = (i) => {
+        const level = thunderRisk(hourlyValue('cape', i), hourlyValue('lifted_index', i), hourlyValue('weather_code', i));
+        if (level !== 'moderate' && level !== 'high') return '';
+        return tileHtml(TXT.detail.thunder, valueRowHtml(TXT.detail.thunderLevels[level]), TXT.detail.estimated);
     };
 
     const snowTile = (i) => {
-        const snowfall = hourlyValue('snowfall', i);            // cm
-        const depthM = hourlyValue('snow_depth', i);            // metres
-        const freezing = hourlyValue('freezing_level_height', i);
-        const temp = hourlyValue('temperature_2m', i);
-
-        const relevant = (snowfall != null && snowfall > 0)
-            || (depthM != null && depthM > 0)
-            || (temp != null && temp <= SNOW_TILE_MAX_TEMP);
-        if (!relevant) return '';
-        if (snowfall == null && depthM == null && freezing == null) return '';
-
-        return tileHtml(TXT.detail.snowTitle, `
-            ${snowfall != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.snowfall}</span><span class="t-cap-emph">${fmtOr(snowfall, 1, ' cm')}</span></div>` : ''}
-            ${depthM != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.snowDepth}</span><span class="t-cap-emph">${fmtOr(depthM * 100, 1, ' cm')}</span></div>` : ''}
-            ${freezing != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.freezingLevel}</span><span class="t-cap-emph">${fmtOr(freezing, 0, ' m')}</span></div>` : ''}
-        `);
+        const snowfall = hourlyValue('snowfall', i);   // cm
+        if (snowfall == null || snowfall <= 0) return '';
+        return tileHtml(TXT.detail.snow, valueRowHtml(fmtOr(snowfall, 1), 'cm'));
     };
 
     /* ---------- air quality + pollen ---------- */
@@ -1918,28 +1798,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const band = aqiBandFor(aqi);
         const markerPct = Math.max(0, Math.min(100, aqi / AQI_SCALE_MAX * 100));
 
-        // Leading pollutant = whichever sub-index equals the overall maximum
-        let leadKey = null, leadValue = -Infinity;
-        AQI_SUB_INDEX_KEYS.forEach((key) => {
-            const sub = aq[`european_aqi_${key}`];
-            if (sub != null && sub > leadValue) { leadValue = sub; leadKey = key; }
-        });
-
-        const chips = AQI_CHIP_KEYS.map((key) => {
-            const conc = aq[key];
-            if (conc == null) return '';
-            const sub = aq[`european_aqi_${key}`];
-            const tint = sub != null ? aqiBandFor(sub).color : 'rgba(255,255,255,0.5)';
-            return `<div class="aq-chip" style="border-color: ${tint};">
-                <span class="aq-chip-dot" style="background: ${tint};"></span>
-                <span class="t-cap">${TXT.detail.pollutants[key]}</span>
-                <span class="t-cap-emph">${fmtOr(conc, 1)}</span>
-            </div>`;
-        }).join('');
-
-        const dust = aq.dust;
-        const aod = aq.aerosol_optical_depth;
-
         return `<section class="detail-section">
             <div class="t-cap-heading">${TXT.detail.airQuality}</div>
             <div class="aq-head">
@@ -1951,35 +1809,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${AQI_BANDS.map((b) => `<span class="aq-scale-band" style="background: ${b.color};"></span>`).join('')}
                 <span class="aq-marker" style="left: ${markerPct.toFixed(1)}%;"></span>
             </div>
-            ${leadKey ? `<div class="t-cap">${TXT.detail.leadingPollutant}: <span class="t-cap-emph">${TXT.detail.pollutants[leadKey]}</span></div>` : ''}
-            ${chips ? `<div class="aq-chips">${chips}</div>` : ''}
-            ${dust != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.dust}</span><span class="t-cap-emph">${fmtOr(dust, 1, ' µg/m³')}</span></div>` : ''}
-            ${aod != null ? `<div class="tile-row"><span class="t-cap">${TXT.detail.haze}</span><span class="t-cap-emph">${wordFor(HAZE_WORDS, aod)} (${fmtOr(aod, 2)})</span></div>` : ''}
         </section>`;
     };
 
+    // Only species above the lowest band; the whole section hides otherwise
     const pollenSection = (i) => {
         const aq = aqAt(i);
         if (!aq) return '';
-        const keys = Object.keys(TXT.detail.pollenSpecies);
-        const present = keys.filter((k) => aq[k] != null);
-        if (!present.length) return '';   // out of the pollen forecast range entirely
-
-        const active = present.filter((k) => aq[k] > 0);
-        const body = active.length
-            ? active.map((k) => {
-                const v = aq[k];
-                return `<div class="pollen-row">
-                    <span class="t-body pollen-name">${TXT.detail.pollenSpecies[k]}</span>
-                    ${miniBarHtml(Math.max(2, v / POLLEN_BAR_FULL * 100), 'var(--accent)')}
-                    <span class="t-cap pollen-value">${fmtOr(v, 1)} ${TXT.detail.grainsPerM3} · ${wordFor(POLLEN_LEVELS, v)}</span>
-                </div>`;
-            }).join('')
-            : `<div class="t-cap section-muted">${TXT.detail.noPollen}</div>`;
+        const notable = Object.keys(TXT.detail.pollenSpecies).filter((k) => aq[k] != null && aq[k] >= POLLEN_NOTABLE_FROM);
+        if (!notable.length) return '';
 
         return `<section class="detail-section">
             <div class="t-cap-heading">${TXT.detail.pollen}</div>
-            ${body}
+            ${notable.map((k) => `<div class="pollen-row">
+                <span class="t-body pollen-name">${TXT.detail.pollenSpecies[k]}</span>
+                ${miniBarHtml(aq[k] / POLLEN_BAR_FULL * 100, 'var(--accent)')}
+                <span class="t-cap pollen-value">${wordFor(POLLEN_LEVELS, aq[k])}</span>
+            </div>`).join('')}
         </section>`;
     };
 
@@ -2630,18 +2476,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const feels = hourlyValue('apparent_temperature', i);
         const code = hourlyValue('weather_code', i);
         const isDay = hourlyValue('is_day', i) === 1;
-        const dayIdx = dayIndexForHour(i);
-        const confidence = confidenceForDay(dayIdx);
         const hasCams = aqAt(i) != null;   // same per-hour CAMS row backs both AQ and pollen
 
         const tiles = [
             precipitationTile(i),
             windTile(i),
             humidityTile(i),
-            pressureTile(i),
-            cloudsTile(i),
-            visibilityTile(i),
             uvTile(i),
+            visibilityTile(i),
             thunderTile(i),
             snowTile(i),
         ].join('');
@@ -2657,11 +2499,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${feels != null ? `<div class="t-cap">${TXT.detail.feelsLike} ${Math.round(feels)}°</div>` : ''}
                         </div>
                     </div>
-                    ${confidenceBadgeHtml(confidence, dayIdx)}
                     <div class="detail-chart-host"></div>
                 </div>
                 <div class="detail-col-side">
-                    <div class="detail-tiles">${tiles}</div>
+                    <div class="detail-tiles detail-tiles--compact">${tiles}</div>
                     ${airQualitySection(i)}
                     ${pollenSection(i)}
                 </div>
@@ -2800,7 +2641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { hourly, daily, current } = lastRender.data;
         const keptScroll = preserveScroll ? detailBodyEl.scrollTop : 0;
 
-        ensureEnsembleLoaded();   // lazy: fires once per location, no-op after
+        if (detailState.view === 'day') ensureEnsembleLoaded();   // lazy: only the day popup shows confidence
         destroyChartMounts();   // the body is about to be replaced wholesale
 
         detailBackBtn.classList.toggle('hidden', !detailState.fromDay);
@@ -2813,7 +2654,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const weekday = getDayName(dateStr, detailState.dayIndex);
             detailTitleEl.textContent = `${weekday}, ${formatMonthDay(dateStr)} · ${formatHour(iso)}`
                 + (isNow ? ` · ${TXT.now}` : '');
-            detailSubtitleEl.textContent = getWeatherCondition(hourly.weather_code[i]);
+            detailSubtitleEl.textContent = '';   // the hero already names the condition
             detailPrevBtn.disabled = i <= 0;
             detailNextBtn.disabled = i >= hourly.time.length - 1;
             renderHourDetail(i, detailBodyEl);
