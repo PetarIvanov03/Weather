@@ -51,7 +51,7 @@ Hour cards are sized as a fraction of the rail in plain CSS, so no JavaScript me
 
 ## Features
 
-- **Current conditions** — temperature, condition, feels-like, today's high and low
+- **Current conditions** — temperature (°C), condition, feels-like, today's high and low
 - **Hourly rail** — next 24 hours with icon, temperature, precipitation probability, wind, and UV index; horizontally scrollable with snap, the ‹ › chevrons scroll one screenful, and a thin line under the cards shows the scroll position
 - **14-day forecast** — day, icon, precipitation %, and low/high with a range bar scaled to the forecast's global min and max
 - **Detail cards** — UV index (current-hour value, level label, gauge, plus the day's peak), wind (speed, compass direction, rotating arrow), humidity with dew point, sunrise and sunset
