@@ -2450,7 +2450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     detailNextBtn.setAttribute('aria-label', TXT.next);
     detailCloseBtn.setAttribute('aria-label', TXT.close);
 
-    const DETAIL_ANIM_MS = 260; // matches the CSS transition duration + slack
+    const DETAIL_ANIM_MS = 340; // CSS --sheet-ms (320ms) + slack
 
     let detailState = null;      // { view: 'hour'|'day', hourIndex, dayIndex, fromDay } or null
     let detailOpen = false;
@@ -2726,11 +2726,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if ('inert' in mainEl) mainEl.inert = true;
         else mainEl.setAttribute('aria-hidden', 'true');
         document.addEventListener('keydown', onDetailKeydown);
-        // rAF so the opacity/transform transition runs from the hidden state
-        requestAnimationFrame(() => {
-            detailOverlay.classList.add('is-open');
-            detailDialog.classList.add('is-open');
-        });
+        // Force a style flush so the transition starts from the closed state;
+        // a lone rAF is not always enough (Safari can batch both states)
+        void detailDialog.offsetWidth;
+        detailOverlay.classList.add('is-open');
+        detailDialog.classList.add('is-open');
         // Charts mounted above measured a display:none box — redraw now that
         // the dialog has a real size
         chartMounts.forEach((m) => m.redraw());
@@ -2759,7 +2759,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         if (reduced) hide(); else setTimeout(hide, DETAIL_ANIM_MS);
 
-        if (detailTriggerEl && document.contains(detailTriggerEl)) detailTriggerEl.focus();
+        // preventScroll: refocusing must not jump the page under the closing sheet
+        if (detailTriggerEl && document.contains(detailTriggerEl)) detailTriggerEl.focus({ preventScroll: true });
         detailTriggerEl = null;
         detailState = null;
     };
