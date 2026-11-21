@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=20">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -124,9 +124,10 @@
                         <div class="rail-outer" id="hourly-rail-outer">
                             <div><span class="t-cap-heading">Hourly forecast</span></div>
                             <div class="rail-viewport">
-                                <span class="rail-chevron" style="left: 0;" aria-hidden="true">‹</span>
-                                <span class="rail-chevron" style="right: 0;" aria-hidden="true">›</span>
+                                <button type="button" class="rail-chevron rail-chevron--back" id="rail-back" aria-label="Earlier hours">‹</button>
+                                <button type="button" class="rail-chevron rail-chevron--forward" id="rail-forward" aria-label="Later hours">›</button>
                                 <div class="rail" id="hourly-rail"></div>
+                                <div class="rail-progress" aria-hidden="true"><span class="rail-progress-thumb" id="rail-progress-thumb"></span></div>
                             </div>
                         </div>
 
@@ -212,6 +213,6 @@
         <div class="detail-body" id="detail-body"></div>
     </div>
 
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
