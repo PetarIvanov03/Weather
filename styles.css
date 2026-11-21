@@ -113,29 +113,37 @@ body {
 }
 
 /* ---------- Typography tokens ---------- */
-.t-display     { font-weight: 300; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 2px 12px rgba(0,0,0,0.3); font-size: 112px; line-height: 1; letter-spacing: -2px; }
-.t-title       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 26px; }
-.t-value       { font-weight: 300; color: #fff; text-shadow: var(--sh); font-size: 24px; line-height: 1; }
-.t-body        { font-weight: 400; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 16px; }
-.t-body-emph   { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 16px; }
-.t-label       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 14px; }
-.t-cap-heading { font-weight: 600; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-.t-cap         { font-weight: 400; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 13px; }
-.t-cap-emph    { font-weight: 600; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 13px; }
-.t-cap-accent  { font-weight: 600; color: var(--accent); text-shadow: var(--sh); font-size: 13px; }
-.t-condition   { font-weight: 400; color: rgba(242, 239, 233, 0.97); text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 10px rgba(0,0,0,0.3); font-size: 26px; }
+/* Sizes grow inversely to size: captions most, the hero number not at all */
+.t-display     { font-weight: 400; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 2px 12px rgba(0,0,0,0.3); font-size: 112px; line-height: 1; letter-spacing: -2px; }
+.t-title       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 27px; }
+.t-value       { font-weight: 400; color: #fff; text-shadow: var(--sh); font-size: 27px; line-height: 1; }
+.t-body        { font-weight: 500; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 17px; }
+.t-body-emph   { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 17px; }
+.t-label       { font-weight: 600; color: #fff; text-shadow: var(--sh); font-size: 16px; }
+.t-cap-heading { font-weight: 600; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+.t-cap         { font-weight: 500; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 15px; }
+.t-cap-emph    { font-weight: 600; color: rgba(242, 239, 233, 0.94); text-shadow: var(--sh); font-size: 15px; }
+.t-cap-accent  { font-weight: 600; color: var(--accent); text-shadow: var(--sh); font-size: 15px; }
+.t-condition   { font-weight: 500; color: rgba(242, 239, 233, 0.97); text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 10px rgba(0,0,0,0.3); font-size: 27px; }
 @media (min-width: 768px) {
     .t-display     { font-size: 108px; letter-spacing: -3px; }
-    .t-title       { font-size: 26px; }
-    .t-value       { font-size: 28px; }
-    .t-body        { font-size: 17px; }
-    .t-body-emph   { font-size: 17px; }
-    .t-label       { font-size: 15px; }
-    .t-cap-heading { font-size: 13px; }
-    .t-cap         { font-size: 13px; }
-    .t-cap-emph    { font-size: 13px; }
-    .t-cap-accent  { font-size: 13px; }
-    .t-condition   { font-size: 26px; }
+    .t-title       { font-size: 27px; }
+    .t-value       { font-size: 30px; }
+    .t-body        { font-size: 18px; }
+    .t-body-emph   { font-size: 18px; }
+    .t-label       { font-size: 16px; }
+    .t-cap-heading { font-size: 15px; }
+    .t-cap         { font-size: 15px; }
+    .t-cap-emph    { font-size: 15px; }
+    .t-cap-accent  { font-size: 15px; }
+    .t-condition   { font-size: 27px; }
+}
+
+/* Text sitting directly on a bright day photo (no glass card behind it) gets a
+   stronger shadow; colours stay the same */
+[data-bg-dark="false"] .hero :is(.t-display, .t-title, .t-body, .t-cap, .t-condition),
+[data-bg-dark="false"] .rail-heading {
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.6), 0 1px 6px rgba(0, 0, 0, 0.5), 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
 /* ---------- Glass surface ---------- */
@@ -176,7 +184,7 @@ main {
 .app-header {
     position: relative; z-index: 30;
     display: flex; align-items: center; gap: 12px;
-    margin-bottom: 10px; max-width: 480px;
+    margin-bottom: 8px; max-width: 480px;
 }
 @media (min-width: 768px) { .app-header { flex-shrink: 0; margin-bottom: 8px; } }
 .search-wrap { position: relative; flex: 1; }
@@ -234,9 +242,9 @@ main {
 .search-muted { color: rgba(255, 255, 255, 0.55); }
 
 /* ---------- Weather layout ---------- */
-.wx-layout { display: flex; flex-direction: column; gap: 18px; }
+.wx-layout { display: flex; flex-direction: column; gap: 12px; }
 @media (min-width: 768px) {
-    .wx-layout { flex-direction: row; gap: 16px; height: 100%; align-items: stretch; min-height: 0; }
+    .wx-layout { flex-direction: row; gap: 12px; height: 100%; align-items: stretch; min-height: 0; }
 }
 
 /* Left panel — plain on mobile, framed photo card on desktop */
@@ -269,14 +277,14 @@ main {
     background: linear-gradient(180deg, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0) 66%);
 }
 
-.panel-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; }
-@media (min-width: 768px) { .panel-inner { gap: 18px; padding: 12px 20px 18px; height: 100%; overflow-y: auto; } }
+.panel-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
+@media (min-width: 768px) { .panel-inner { gap: 12px; padding: 12px 20px 16px; height: 100%; overflow-y: auto; } }
 
 /* Hero */
-.hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 10px; }
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 4px; }
 .hero-top { order: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.hero-temp { order: 2; margin: 6px 0 0; text-transform: none; }
-.hero-bottom { order: 3; display: flex; flex-direction: column; align-items: center; gap: 3px; margin-top: 2px; }
+.hero-temp { order: 2; margin: 2px 0 0; text-transform: none; }
+.hero-bottom { order: 3; display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 0; }
 .hero-city { text-transform: capitalize; }
 @media (min-width: 768px) {
     .hero { display: grid; grid-template-columns: auto 1fr; column-gap: 24px; align-items: center; text-align: left; padding-top: 0; flex: 0 0 auto; }
@@ -286,7 +294,7 @@ main {
 }
 
 /* Hourly rail */
-.rail-outer { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.rail-outer { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .rail-viewport { position: relative; margin: 0 -14px; padding: 0 14px; }
 @media (min-width: 768px) {
     .rail-outer { flex: 0 0 auto; min-height: 0; margin-top: auto; }
@@ -348,21 +356,21 @@ main {
 
 .hour-card {
     flex: 0 0 auto; min-height: 160px; scroll-snap-align: start;
-    display: grid; grid-template-rows: 21px 38px 30px 20px 20px 19px; row-gap: 3px;
-    justify-items: center; align-items: center; padding: 9px 6px;
+    display: grid; grid-template-rows: 22px 36px 30px 22px 22px 22px; row-gap: 2px;
+    justify-items: center; align-items: center; padding: 8px 4px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.30);
 }
 @media (min-width: 768px) {
-    .hour-card { width: 90px; height: clamp(195px, 29vh, 275px); min-height: 0; grid-template-rows: 16px 34px 22px 16px 16px 14px; row-gap: 4px; align-content: space-between; }
+    .hour-card { width: 90px; height: clamp(195px, 29vh, 275px); min-height: 0; grid-template-rows: 22px 34px 30px 22px 22px 22px; row-gap: 4px; align-content: space-between; }
 }
 .hour-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
 @media (min-width: 768px) { .hour-icon { width: 36px; height: 36px; } }
 
 /* Secondary cards */
-.secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (min-width: 768px) { .secondary { grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 0 0 auto; } }
-.info-card { padding: 14px; display: flex; flex-direction: column; gap: 5px; }
-@media (min-width: 768px) { .info-card { padding: 14px; justify-content: space-between; } }
+.secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (min-width: 768px) { .secondary { grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 0 0 auto; } }
+.info-card { padding: 12px; display: flex; flex-direction: column; gap: 3px; }
+@media (min-width: 768px) { .info-card { padding: 12px 14px; justify-content: space-between; } }
 .info-value-row { display: flex; align-items: center; gap: 8px; min-height: 30px; }
 @media (min-width: 768px) { .info-value-row { min-height: 38px; } }
 .bar-track { width: 100%; height: 4px; border-radius: 3px; background: var(--track); overflow: hidden; }
@@ -377,19 +385,19 @@ main {
 /* Right column: 14-day forecast */
 .wx-right { min-width: 0; }
 @media (min-width: 768px) { .wx-right { flex: 1 1 30%; min-height: 0; display: flex; } }
-.forecast-card { padding: 13px 14px; display: flex; flex-direction: column; }
-@media (min-width: 768px) { .forecast-card { padding: 20px 22px; flex: 1; min-height: 0; } }
-.forecast-heading { margin-bottom: 8px; }
+.forecast-card { padding: 12px 14px; display: flex; flex-direction: column; }
+@media (min-width: 768px) { .forecast-card { padding: 16px 20px; flex: 1; min-height: 0; } }
+.forecast-heading { margin-bottom: 4px; }
 .forecast-scroll { display: flex; flex-direction: column; }
 @media (min-width: 768px) { .forecast-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; } }
 .forecast-scroll::-webkit-scrollbar { display: none; }
 .forecast-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 .day-row {
-    display: grid; grid-template-columns: 42px 26px 40px 1fr 34px; align-items: center; gap: 10px;
-    padding: 7px 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid; grid-template-columns: 50px 26px 44px 1fr 36px; align-items: center; gap: 8px;
+    padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .day-row:first-child { border-top: 0; }
-@media (min-width: 768px) { .day-row { grid-template-columns: 44px 28px 40px 1fr 40px; padding: 9px 0; flex: 1 0 auto; min-height: 44px; } }
+@media (min-width: 768px) { .day-row { grid-template-columns: 52px 28px 46px 1fr 40px; padding: 7px 0; flex: 1 0 auto; min-height: 44px; } }
 .day-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
 /* Low temp + bar share the flexible column; high temp gets its own fixed column */
 .day-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
