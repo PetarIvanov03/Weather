@@ -284,6 +284,10 @@ main {
 .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 4px; }
 .hero-top { order: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .hero-temp { order: 2; margin: 2px 0 0; text-transform: none; }
+/* Thin degree ring, then a small bold "C" top-aligned with it */
+/* "°C" as one small unit, top-aligned with the digits: light ring, bold C */
+.hero-unit { font-size: 0.34em; font-weight: 600; vertical-align: top; position: relative; top: 0.36em; margin-left: 0.08em; letter-spacing: 0; }
+.hero-deg { font-weight: 300; margin-right: 0.02em; }
 .hero-bottom { order: 3; display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 0; }
 .hero-city { text-transform: capitalize; }
 @media (min-width: 768px) {
