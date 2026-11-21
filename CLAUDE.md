@@ -67,7 +67,13 @@ the user's own uncommitted work; leave unrelated changes alone and never revert 
 
 ## Working with the user
 
-- Reply in the user's language (Bulgarian); code, comments, commits and docs in English.
+- Reply in the user's language (Bulgarian); code, comments, commits and docs in English
+  (except `RELEASE_NOTES.md`, which is Bulgarian).
+- **Docs:** `README.md` (everyone, English), `RELEASE_NOTES.md` (users, Bulgarian),
+  `CLAUDE.md`. For every change users will notice, add a dated entry at the top of
+  `RELEASE_NOTES.md` (`## 📅 <date>`, plain words, no tech terms) ending with a
+  "За Виber"-style code block ready to paste, app link last. Screenshots in
+  `docs/screenshots/` show only public city weather; refresh them after visible UI changes.
 - Short answers. Plan as a task list, then do it; for features use `/feature` (spec first).
 - Report honestly: what changed (file + section), what was verified and how, what
   was NOT verified. Never claim a check you didn't run.
