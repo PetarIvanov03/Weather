@@ -337,8 +337,10 @@ main {
 @media (min-width: 380px) {
     .rail {
         --fade-left: 40px; --fade-right: 40px;
-        -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
-        mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
+        /* Edges keep 30% opacity: a full fade showed the photo through (white cloud
+           on one side, dark sky on the other) */
+        -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.3), #000 var(--fade-left), #000 calc(100% - var(--fade-right)), rgba(0,0,0,0.3));
+        mask-image: linear-gradient(to right, rgba(0,0,0,0.3), #000 var(--fade-left), #000 calc(100% - var(--fade-right)), rgba(0,0,0,0.3));
     }
     .rail.is-start { --fade-left: 0px; }
     .rail.is-end { --fade-right: 0px; }
