@@ -163,9 +163,12 @@ main {
     max-width: 1900px;
     margin: 0 auto;
     padding: 8px 14px 28px;
+    /* Installed iOS PWA draws under the status bar (black-translucent +
+       viewport-fit=cover); keep the search row below the notch. 0 elsewhere. */
+    padding-top: calc(8px + env(safe-area-inset-top));
 }
 @media (min-width: 768px) {
-    main { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 10px 18px 18px; overflow: hidden; }
+    main { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 10px 18px 18px; padding-top: calc(10px + env(safe-area-inset-top)); overflow: hidden; }
     #weather-card { flex: 1 1 auto; min-height: 0; }
 }
 
