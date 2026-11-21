@@ -139,10 +139,11 @@ body {
     .t-condition   { font-size: 27px; }
 }
 
-/* Text sitting directly on a bright day photo (no glass card behind it) gets a
-   stronger shadow; colours stay the same */
+/* Text sitting directly on a bright day photo (no glass card behind it) is pure
+   white with a stronger shadow; the off-white secondary tone looked muddy there */
 [data-bg-dark="false"] .hero :is(.t-display, .t-title, .t-body, .t-cap, .t-condition),
 [data-bg-dark="false"] .rail-heading {
+    color: #fff;
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.6), 0 1px 6px rgba(0, 0, 0, 0.5), 0 0 18px rgba(0, 0, 0, 0.45);
 }
 
